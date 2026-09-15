@@ -98,3 +98,24 @@ module "db_security_group" {
     Purpose   = "database"
   }
 }
+
+module "app_ec2" {
+  source = "../../modules/ec2"
+
+  name          = "${var.project_name}-${var.environment}-app"
+  ami_id        = data.aws_ami.amazon_linux.id
+  instance_type = "t3a.micro"
+  subnet_id     = module.vpc.private_subnet_ids[0]
+  security_group_ids = [
+    module.app_security_group.security_group_id
+  ]
+  associate_public_ip_address = false
+  root_volume_size            = 20
+  root_volume_type            = "gp3"
+
+  tags = {
+    Component = "compute"
+    Tier      = "private"
+    Purpose   = "application"
+  }
+}

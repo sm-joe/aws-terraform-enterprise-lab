@@ -27,3 +27,13 @@ output "db_security_group_id" {
   description = "ID of the database security group."
   value       = module.db_security_group.security_group_id
 }
+
+output "app_instance_id" {
+  description = "ID of the development application EC2 instance."
+  value       = module.app_ec2.instance_id
+}
+
+output "app_private_ip" {
+  description = "Private IP address of the development application EC2 instance."
+  value       = module.app_ec2.private_ip
+}
