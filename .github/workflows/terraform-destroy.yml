@@ -1,0 +1,169 @@
+name: Terraform Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Destroy action"
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+
+      environment:
+        description: "Environment to destroy"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+      confirmation:
+        description: "For apply, enter DESTROY exactly"
+        required: false
+        type: string
+
+      plan_run_id:
+        description: "Required for apply: GitHub Actions run ID that generated the approved destroy plan"
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+  actions: read
+
+jobs:
+  validate-input:
+    name: Validate Destroy Request
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify main branch
+        run: |
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "Destroy workflows must run from main."
+            exit 1
+          fi
+
+      - name: Validate apply request
+        if: inputs.action == 'apply'
+        run: |
+          if [ -z "${{ inputs.plan_run_id }}" ]; then
+            echo "plan_run_id is required when action is apply."
+            exit 1
+          fi
+
+          if [ "${{ inputs.confirmation }}" != "DESTROY" ]; then
+            echo "For apply, confirmation must be exactly DESTROY."
+            exit 1
+          fi
+
+  terraform-destroy-plan:
+    name: Terraform Destroy Plan - ${{ inputs.environment }}
+    if: inputs.action == 'plan'
+    needs: validate-input
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.0"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ap-south-1
+          role-to-assume: ${{ inputs.environment == 'dev' && 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Dev' || inputs.environment == 'staging' && 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Staging' || 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Prod' }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Terraform Init
+        working-directory: environments/${{ inputs.environment }}
+        run: terraform init
+
+      - name: Terraform Destroy Plan
+        working-directory: environments/${{ inputs.environment }}
+        run: terraform plan -destroy -out=destroy.tfplan
+
+      - name: Save plan metadata
+        working-directory: environments/${{ inputs.environment }}
+        run: |
+          echo "${GITHUB_SHA}" > destroy-plan-source-sha.txt
+          echo "${{ inputs.environment }}" > destroy-plan-environment.txt
+
+      - name: Upload Terraform destroy plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-destroy-plan-${{ inputs.environment }}-${{ github.run_id }}
+          path: |
+            environments/${{ inputs.environment }}/destroy.tfplan
+            environments/${{ inputs.environment }}/destroy-plan-source-sha.txt
+            environments/${{ inputs.environment }}/destroy-plan-environment.txt
+          retention-days: 7
+
+  terraform-destroy-apply:
+    name: Terraform Destroy Apply - ${{ inputs.environment }}
+    if: inputs.action == 'apply'
+    needs: validate-input
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download approved destroy plan
+        uses: actions/download-artifact@v7
+        with:
+          name: terraform-destroy-plan-${{ inputs.environment }}-${{ inputs.plan_run_id }}
+          path: destroy-artifact
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.plan_run_id }}
+
+      - name: Read destroy plan metadata
+        id: metadata
+        run: |
+          echo "source_sha=$(cat destroy-artifact/destroy-plan-source-sha.txt)" >> "$GITHUB_OUTPUT"
+          echo "environment=$(cat destroy-artifact/destroy-plan-environment.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Verify destroy plan metadata
+        run: |
+          if [ "${{ steps.metadata.outputs.environment }}" != "${{ inputs.environment }}" ]; then
+            echo "Destroy plan environment does not match requested environment."
+            exit 1
+          fi
+
+      - name: Checkout planned source revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.metadata.outputs.source_sha }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.0"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ap-south-1
+          role-to-assume: ${{ inputs.environment == 'dev' && 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Dev' || inputs.environment == 'staging' && 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Staging' || 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Prod' }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Terraform Init
+        working-directory: environments/${{ inputs.environment }}
+        run: terraform init
+
+      - name: Restore approved destroy plan
+        run: |
+          cp "destroy-artifact/destroy.tfplan" "environments/${{ inputs.environment }}/destroy.tfplan"
+
+      - name: Terraform Destroy Apply
+        working-directory: environments/${{ inputs.environment }}
+        run: terraform apply -auto-approve destroy.tfplan
