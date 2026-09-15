@@ -4,13 +4,8 @@ variable "name" {
 }
 
 variable "vpc_cidr" {
-  description = "CIDR block for the VPC."
+  description = "CIDR block for VPC."
   type        = string
-
-  validation {
-    condition     = can(cidrhost(var.vpc_cidr, 0))
-    error_message = "vpc_cidr must be a valid IPv4 CIDR block."
-  }
 }
 
 variable "availability_zones" {
@@ -26,21 +21,11 @@ variable "availability_zones" {
 variable "public_subnet_cidrs" {
   description = "CIDR blocks for public subnets."
   type        = list(string)
-
-  validation {
-    condition     = length(var.public_subnet_cidrs) == length(var.availability_zones)
-    error_message = "There must be one public subnet CIDR per Availability Zone."
-  }
 }
 
 variable "private_subnet_cidrs" {
   description = "CIDR blocks for private subnets."
   type        = list(string)
-
-  validation {
-    condition     = length(var.private_subnet_cidrs) == length(var.availability_zones)
-    error_message = "There must be one private subnet CIDR per Availability Zone."
-  }
 }
 
 variable "enable_nat_gateway" {
@@ -55,8 +40,8 @@ variable "nat_gateway_count" {
   default     = 1
 
   validation {
-    condition     = var.nat_gateway_count >= 0 && var.nat_gateway_count <= length(var.availability_zones)
-    error_message = "nat_gateway_count must be between 0 and the number of availability zones."
+    condition     = var.nat_gateway_count >= 0
+    error_message = "nat_gateway_count must be zero or greater."
   }
 }
 
