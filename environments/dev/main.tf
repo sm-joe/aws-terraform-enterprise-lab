@@ -136,6 +136,24 @@ module "app_instance_role" {
     "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   ]
 
+  inline_policies = {
+    database_secret_access = jsonencode({
+      Version = "2012-10-17"
+
+      Statement = [
+        {
+          Effect = "Allow"
+
+          Action = [
+            "secretsmanager:GetSecretValue"
+          ]
+
+          Resource = module.app_db_secret.secret_arn
+        }
+      ]
+    })
+  }
+
   create_instance_profile = true
 
   tags = {
@@ -207,6 +225,27 @@ module "app_rds" {
     Component = "database"
     Tier      = "private"
     Purpose   = "application"
+  }
+}
+
+module "app_db_secret" {
+  source = "../../modules/secrets-manager"
+
+  name        = "${var.project_name}/${var.environment}/database"
+  description = "Database credentials for the development application."
+
+  secret_string = jsonencode({
+    username = "labadmin"
+    password = var.db_master_password
+    database = "appdb"
+    host     = module.app_rds.address
+    port     = module.app_rds.port
+  })
+
+  tags = {
+    Component = "security"
+    Tier      = "private"
+    Purpose   = "database-credentials"
   }
 }
 

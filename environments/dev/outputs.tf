@@ -77,3 +77,8 @@ output "app_dynamodb_table_arn" {
   description = "Application DynamoDB table ARN."
   value       = module.app_dynamodb.table_arn
 }
+
+output "app_db_secret_arn" {
+  description = "ARN of the application database secret."
+  value       = module.app_db_secret.secret_arn
+}
