@@ -1,21 +1,21 @@
 resource "aws_lb" "this" {
-  name = substr("${var.name}", 0, 32)
-  internal = false
+  name               = substr("${var.name}", 0, 32)
+  internal           = false
   load_balancer_type = "application"
 
   security_groups = var.security_group_ids
-  subnets = var.subnet_ids
+  subnets         = var.subnet_ids
 
   tags = merge(
     var.tags,
     {
-        Name = var.name
+      Name = var.name
     }
   )
 }
 
 resource "aws_lb_target_group" "this" {
-  name = substr("${var.name}-tg", 0, 32)
+  name        = substr("${var.name}-tg", 0, 32)
   port        = var.target_port
   protocol    = "HTTP"
   target_type = "instance"
@@ -39,12 +39,6 @@ resource "aws_lb_target_group" "this" {
       Name = "${var.name}-tg"
     }
   )
-}
-
-resource "aws_lb_target_group_attachment" "this" {
-  target_group_arn = aws_lb_target_group.this.arn
-  target_id        = var.target_instance_id
-  port             = var.target_port
 }
 
 resource "aws_lb_listener" "http" {

@@ -27,11 +27,6 @@ variable "security_group_ids" {
   type        = list(string)
 }
 
-variable "target_instance_id" {
-  description = "EC2 instance ID registered in the target group."
-  type        = string
-}
-
 variable "target_port" {
   description = "Port exposed by the target application."
   type        = number

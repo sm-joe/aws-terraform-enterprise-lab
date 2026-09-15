@@ -13,6 +13,16 @@ output "private_subnet_ids" {
   value       = module.vpc.private_subnet_ids
 }
 
+output "app_autoscaling_group_name" {
+  description = "Name of the development application Auto Scaling Group."
+  value       = module.app_asg.autoscaling_group_id
+}
+
+output "app_launch_template_id" {
+  description = "ID of the development application launch template."
+  value       = module.app_asg.launch_template_id
+}
+
 output "alb_security_group_id" {
   description = "ID of the ALB security group."
   value       = module.alb_security_group.security_group_id
@@ -26,16 +36,6 @@ output "app_security_group_id" {
 output "db_security_group_id" {
   description = "ID of the database security group."
   value       = module.db_security_group.security_group_id
-}
-
-output "app_instance_id" {
-  description = "ID of the development application EC2 instance."
-  value       = module.app_ec2.instance_id
-}
-
-output "app_private_ip" {
-  description = "Private IP address of the development application EC2 instance."
-  value       = module.app_ec2.private_ip
 }
 
 output "app_alb_dns_name" {

@@ -99,21 +99,33 @@ module "db_security_group" {
   }
 }
 
-module "app_ec2" {
-  source = "../../modules/ec2"
+module "app_asg" {
+  source = "../../modules/asg"
 
-  name          = "${var.project_name}-${var.environment}-app"
+  name = "${var.project_name}-${var.environment}-app-asg"
+
   ami_id        = data.aws_ami.amazon_linux.id
-  instance_type = "t3a.micro"
-  subnet_id     = module.vpc.private_subnet_ids[0]
+  instance_type = "t3.micro"
+
+  subnet_ids = module.vpc.private_subnet_ids
+
   security_group_ids = [
     module.app_security_group.security_group_id
   ]
-  iam_instance_profile        = module.app_instance_role.instance_profile_name
-  user_data_file              = "${path.module}/../../modules/ec2/user_data/app.sh"
-  associate_public_ip_address = false
-  root_volume_size            = 20
-  root_volume_type            = "gp3"
+
+  iam_instance_profile = module.app_instance_role.instance_profile_name
+
+  user_data_file = "${path.module}/../../modules/ec2/user_data/app.sh"
+
+  min_size         = 1
+  max_size         = 2
+  desired_capacity = 2
+
+  target_group_arns = [
+    module.app_alb.target_group_arn
+  ]
+
+  root_volume_size = 20
 
   tags = {
     Component = "compute"
@@ -131,28 +143,6 @@ module "app_instance_role" {
   trusted_services = [
     "ec2.amazonaws.com"
   ]
-
-  managed_policy_arns = [
-    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  ]
-
-  inline_policies = {
-    database_secret_access = jsonencode({
-      Version = "2012-10-17"
-
-      Statement = [
-        {
-          Effect = "Allow"
-
-          Action = [
-            "secretsmanager:GetSecretValue"
-          ]
-
-          Resource = module.app_db_secret.secret_arn
-        }
-      ]
-    })
-  }
 
   create_instance_profile = true
 
@@ -176,8 +166,7 @@ module "app_alb" {
     module.alb_security_group.security_group_id
   ]
 
-  target_instance_id = module.app_ec2.instance_id
-  target_port        = 8080
+  target_port = 8080
 
   health_check_path = "/"
 
@@ -279,4 +268,53 @@ module "app_dynamodb" {
     Tier      = "private"
     Purpose   = "application-data"
   }
+}
+
+module "app_s3_policy" {
+  source = "../../modules/iam-policy"
+
+  name        = "${var.project_name}-${var.environment}-app-s3-access"
+  description = "Allows the application EC2 role to access the application S3 bucket."
+
+  policy = templatefile(
+    "${path.module}/iam/policies/app-s3-access.json.tpl",
+    {
+      bucket_arn = module.app_s3.bucket_arn
+    }
+  )
+
+  role_name = module.app_instance_role.role_name
+
+  tags = {
+    Component = "iam"
+    Purpose   = "application-s3-access"
+  }
+}
+
+module "app_secrets_policy" {
+  source = "../../modules/iam-policy"
+
+  name        = "${var.project_name}-${var.environment}-app-secrets-access"
+  description = "Allows the application EC2 role to read the application database secret."
+
+  policy = templatefile(
+    "${path.module}/iam/policies/app-secrets-access.json.tpl",
+    {
+      secret_arn = module.app_db_secret.secret_arn
+    }
+  )
+
+  role_name = module.app_instance_role.role_name
+
+  tags = {
+    Component = "iam"
+    Purpose   = "application-secrets-access"
+  }
+}
+
+module "app_ssm_policy_attachment" {
+  source = "../../modules/iam-role-policy-attachment"
+
+  role_name  = module.app_instance_role.role_name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
