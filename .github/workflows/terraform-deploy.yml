@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Environment to plan"
+        description: "Environment to deploy"
         required: true
         type: choice
         options:
@@ -54,3 +54,8 @@ jobs:
       - name: Terraform Plan
         working-directory: environments/${{ inputs.environment }}
         run: terraform plan
+
+      - name: Terraform Apply - Dev Only
+        if: inputs.environment == 'dev'
+        working-directory: environments/dev
+        run: terraform apply -auto-approve
