@@ -49,6 +49,17 @@ variable "enable_nat_gateway" {
   default     = true
 }
 
+variable "nat_gateway_count" {
+  description = "Number of NAT Gateways to create."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.nat_gateway_count >= 0 && var.nat_gateway_count <= length(var.availability_zones)
+    error_message = "nat_gateway_count must be between 0 and the number of availability zones."
+  }
+}
+
 variable "tags" {
   description = "Additional tags applied to VPC resources."
   type        = map(string)

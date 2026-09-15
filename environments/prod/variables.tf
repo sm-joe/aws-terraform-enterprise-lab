@@ -19,10 +19,20 @@ variable "project_name" {
 variable "environment" {
   description = "Deployment environment."
   type        = string
-  default     = "dev"
+  default     = "prod"
 
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be dev, staging, or prod."
+  }
+}
+variable "db_master_password" {
+  description = "Master password for the development PostgreSQL database."
+  type        = string
+  sensitive   = true
+
+  validation {
+    condition     = length(var.db_master_password) >= 12
+    error_message = "db_master_password must be at least 12 characters."
   }
 }

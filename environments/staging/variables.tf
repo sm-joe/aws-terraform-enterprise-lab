@@ -19,7 +19,7 @@ variable "project_name" {
 variable "environment" {
   description = "Deployment environment."
   type        = string
-  default     = "dev"
+  default     = "staging"
 
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
