@@ -1,18 +1,26 @@
-name: Terraform Deployment
+name: Terraform Promotion
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to promote"
+        required: true
+        type: choice
+        options:
+          - staging
+          - prod
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  terraform-dev:
-    name: Terraform Plan and Apply - Dev
+  terraform-promotion:
+    name: Terraform Promotion - ${{ inputs.environment }}
     runs-on: ubuntu-latest
 
-    environment: dev
+    environment: ${{ inputs.environment }}
 
     steps:
       - name: Checkout
@@ -21,7 +29,7 @@ jobs:
       - name: Verify main branch
         if: github.ref != 'refs/heads/main'
         run: |
-          echo "Deployment workflows must run from main."
+          echo "Promotion workflows must run from main."
           exit 1
 
       - name: Setup Terraform
@@ -33,19 +41,19 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: ap-south-1
-          role-to-assume: arn:aws:iam::638631156706:role/GitHubActions-Terraform-Dev
+          role-to-assume: ${{ inputs.environment == 'staging' && 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Staging' || 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Prod' }}
 
       - name: Verify AWS identity
         run: aws sts get-caller-identity
 
       - name: Terraform Init
-        working-directory: environments/dev
+        working-directory: environments/${{ inputs.environment }}
         run: terraform init
 
       - name: Terraform Plan
-        working-directory: environments/dev
+        working-directory: environments/${{ inputs.environment }}
         run: terraform plan
 
       - name: Terraform Apply
-        working-directory: environments/dev
+        working-directory: environments/${{ inputs.environment }}
         run: terraform apply -auto-approve
