@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Verify main branch
         if: github.ref != 'refs/heads/main'
@@ -30,7 +30,7 @@ jobs:
           terraform_version: "1.15.0"
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ap-south-1
           role-to-assume: arn:aws:iam::638631156706:role/GitHubActions-Terraform-Dev
@@ -44,8 +44,8 @@ jobs:
 
       - name: Terraform Plan
         working-directory: environments/dev
-        run: terraform plan
+        run: terraform plan -out=tfplan
 
       - name: Terraform Apply
         working-directory: environments/dev
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve tfplan
