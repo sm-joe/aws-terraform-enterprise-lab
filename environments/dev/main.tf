@@ -1,5 +1,3 @@
-data "aws_region" "current" {}
-
 module "vpc" {
   source = "../../modules/vpc"
 
@@ -21,5 +19,82 @@ module "vpc" {
 
   tags = {
     Component = "networking"
+  }
+}
+
+module "alb_security_group" {
+  source = "../../modules/security-group"
+
+  name        = "${var.project_name}-${var.environment}-alb-sg"
+  description = "Security group for the development application load balancer."
+  vpc_id      = module.vpc.vpc_id
+
+  ingress_rules = [
+    {
+      description = "Allow HTTP from the Internet"
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    },
+    {
+      description = "Allow HTTPS from the Internet"
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
+
+  tags = {
+    Component = "security"
+    Tier      = "public"
+  }
+}
+
+module "app_security_group" {
+  source = "../../modules/security-group"
+
+  name        = "${var.project_name}-${var.environment}-app-sg"
+  description = "Security group for application workloads."
+  vpc_id      = module.vpc.vpc_id
+
+  ingress_rules = [
+    {
+      description              = "Allow application traffic from ALB"
+      from_port                = 8080
+      to_port                  = 8080
+      protocol                 = "tcp"
+      source_security_group_id = module.alb_security_group.security_group_id
+    }
+  ]
+  tags = {
+    Component = "security"
+    Tier      = "private"
+    Purpose   = "application"
+  }
+}
+
+module "db_security_group" {
+  source = "../../modules/security-group"
+
+  name        = "${var.project_name}-${var.environment}-db-sg"
+  description = "Security group for database workloads."
+  vpc_id      = module.vpc.vpc_id
+
+  ingress_rules = [
+    {
+      description              = "Allow PostgreSQL from application workloads"
+      from_port                = 5432
+      to_port                  = 5432
+      protocol                 = "tcp"
+      source_security_group_id = module.app_security_group.security_group_id
+    }
+  ]
+
+  tags = {
+    Component = "security"
+    Tier      = "private"
+    Purpose   = "database"
   }
 }
