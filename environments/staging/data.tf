@@ -1,3 +1,4 @@
+# tflint-ignore: terraform_unused_declarations
 data "terraform_remote_state" "shared" {
   backend = "s3"
 
