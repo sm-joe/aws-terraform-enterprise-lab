@@ -52,8 +52,8 @@ variable "public_subnet_cidrs" {
   ]
 
   validation {
-    condition     = length(var.public_subnet_cidrs) == length(var.availability_zones)
-    error_message = "There must be one public subnet CIDR per Availability Zone."
+    condition     = length(var.public_subnet_cidrs) > 0
+    error_message = "At least one public subnet CIDR is required."
   }
 }
 
@@ -67,8 +67,8 @@ variable "private_subnet_cidrs" {
   ]
 
   validation {
-    condition     = length(var.private_subnet_cidrs) == length(var.availability_zones)
-    error_message = "There must be one private subnet CIDR per Availability Zone."
+    condition     = length(var.private_subnet_cidrs) > 0
+    error_message = "At least one private subnet CIDR is required."
   }
 }
 
@@ -97,5 +97,16 @@ variable "environment" {
   validation {
     condition     = contains(["dev", "staging", "prod", "shared"], var.environment)
     error_message = "Environment must be dev, staging, prod or shared."
+  }
+}
+
+check "subnet_configuration" {
+  assert {
+    condition = (
+      length(var.public_subnet_cidrs) == length(var.availability_zones) &&
+      length(var.private_subnet_cidrs) == length(var.availability_zones)
+    )
+
+    error_message = "The number of public and private subnet CIDRs must match the number of Availability Zones."
   }
 }
