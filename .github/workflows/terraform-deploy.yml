@@ -1,0 +1,56 @@
+name: Terraform Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to plan"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform-plan:
+    name: Terraform Plan - ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify main branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "Deployment workflows must run from main."
+          exit 1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.0"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-south-1
+          role-to-assume: ${{ inputs.environment == 'dev' && 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Dev' || inputs.environment == 'staging' && 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Staging' || 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Prod' }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Terraform Init
+        working-directory: environments/${{ inputs.environment }}
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: environments/${{ inputs.environment }}
+        run: terraform plan
