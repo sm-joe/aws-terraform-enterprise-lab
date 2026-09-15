@@ -36,16 +36,19 @@ jobs:
 
     steps:
       - name: Verify main branch
-        if: github.ref != 'refs/heads/main'
         run: |
-          echo "Promotion workflows must run from main."
-          exit 1
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "Promotion workflows must run from main."
+            exit 1
+          fi
 
       - name: Validate apply request
-        if: inputs.action == 'apply' && inputs.plan_run_id == ''
+        if: inputs.action == 'apply'
         run: |
-          echo "plan_run_id is required when action is apply."
-          exit 1
+          if [ -z "${{ inputs.plan_run_id }}" ]; then
+            echo "plan_run_id is required when action is apply."
+            exit 1
+          fi
 
   terraform-plan:
     name: Terraform Plan - ${{ inputs.environment }}
@@ -61,10 +64,10 @@ jobs:
 
       - name: Verify main branch
         run: |
-          if ("${{ github.ref }}" -ne "refs/heads/main") {
-            Write-Error "Promotion workflows must run from main."
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "Promotion workflows must run from main."
             exit 1
-          }
+          fi
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -90,7 +93,6 @@ jobs:
 
       - name: Save plan metadata
         working-directory: environments/${{ inputs.environment }}
-        shell: bash
         run: |
           echo "${GITHUB_SHA}" > plan-source-sha.txt
           echo "${{ inputs.environment }}" > plan-environment.txt
@@ -124,13 +126,11 @@ jobs:
 
       - name: Read plan metadata
         id: metadata
-        shell: bash
         run: |
           echo "source_sha=$(cat promotion-artifact/plan-source-sha.txt)" >> "$GITHUB_OUTPUT"
           echo "environment=$(cat promotion-artifact/plan-environment.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Verify plan metadata
-        shell: bash
         run: |
           if [ "${{ steps.metadata.outputs.environment }}" != "${{ inputs.environment }}" ]; then
             echo "Plan environment does not match requested environment."
@@ -161,7 +161,6 @@ jobs:
         run: terraform init
 
       - name: Restore Terraform plan
-        shell: bash
         run: |
           cp "promotion-artifact/tfplan" "environments/${{ inputs.environment }}/tfplan"
 
