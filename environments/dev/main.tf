@@ -109,6 +109,8 @@ module "app_ec2" {
   security_group_ids = [
     module.app_security_group.security_group_id
   ]
+  iam_instance_profile        = module.app_instance_role.instance_profile_name
+  user_data_file              = "${path.module}/../../modules/ec2/user_data/app.sh"
   associate_public_ip_address = false
   root_volume_size            = 20
   root_volume_type            = "gp3"
@@ -117,5 +119,125 @@ module "app_ec2" {
     Component = "compute"
     Tier      = "private"
     Purpose   = "application"
+  }
+}
+
+module "app_instance_role" {
+  source = "../../modules/iam-role"
+
+  name        = "${var.project_name}-${var.environment}-app-role"
+  description = "IAM role for the development application EC2 instance."
+
+  trusted_services = [
+    "ec2.amazonaws.com"
+  ]
+
+  managed_policy_arns = [
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  ]
+
+  create_instance_profile = true
+
+  tags = {
+    Component = "iam"
+    Tier      = "private"
+    Purpose   = "application"
+  }
+}
+
+module "app_alb" {
+  source = "../../modules/alb"
+
+  name = substr("${var.project_name}-${var.environment}-alb", 0, 32)
+
+  vpc_id = module.vpc.vpc_id
+
+  subnet_ids = module.vpc.public_subnet_ids
+
+  security_group_ids = [
+    module.alb_security_group.security_group_id
+  ]
+
+  target_instance_id = module.app_ec2.instance_id
+  target_port        = 8080
+
+  health_check_path = "/"
+
+  tags = {
+    Component = "load-balancing"
+    Tier      = "public"
+    Purpose   = "application"
+  }
+}
+
+module "app_rds" {
+  source = "../../modules/rds"
+
+  name       = "${var.project_name}-${var.environment}-postgres"
+  identifier = "${var.project_name}-${var.environment}-postgres"
+
+  engine         = "postgres"
+  engine_version = "17"
+  instance_class = "db.t3.micro"
+
+  allocated_storage = 20
+  storage_type      = "gp3"
+
+  database_name = "appdb"
+
+  master_username = "labadmin"
+  master_password = var.db_master_password
+
+  port = 5432
+
+  subnet_ids = module.vpc.private_subnet_ids
+
+  security_group_ids = [
+    module.db_security_group.security_group_id
+  ]
+
+  multi_az = false
+
+  backup_retention_period = 0
+
+  skip_final_snapshot = true
+  deletion_protection = false
+
+  tags = {
+    Component = "database"
+    Tier      = "private"
+    Purpose   = "application"
+  }
+}
+
+module "app_s3" {
+  source = "../../modules/s3"
+
+  bucket_name = "${var.project_name}-${var.environment}-app-data"
+
+  versioning_enabled = true
+  force_destroy      = false
+
+  tags = {
+    Component = "storage"
+    Tier      = "private"
+    Purpose   = "application-data"
+  }
+}
+
+module "app_dynamodb" {
+  source = "../../modules/dynamodb"
+
+  table_name = "${var.project_name}-${var.environment}-app"
+
+  hash_key      = "id"
+  hash_key_type = "S"
+
+  billing_mode = "PAY_PER_REQUEST"
+
+  tags = {
+    Component = "database"
+    Tier      = "private"
+    Purpose   = "application-data"
   }
 }

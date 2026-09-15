@@ -37,3 +37,43 @@ output "app_private_ip" {
   description = "Private IP address of the development application EC2 instance."
   value       = module.app_ec2.private_ip
 }
+
+output "app_alb_dns_name" {
+  description = "DNS name of the development application ALB."
+  value       = module.app_alb.load_balancer_dns_name
+}
+
+output "app_rds_endpoint" {
+  description = "Endpoint of the development PostgreSQL database."
+  value       = module.app_rds.endpoint
+}
+
+output "app_rds_address" {
+  description = "Hostname of the development PostgreSQL database."
+  value       = module.app_rds.address
+}
+
+output "app_rds_port" {
+  description = "Port of the development PostgreSQL database."
+  value       = module.app_rds.port
+}
+
+output "app_s3_bucket_name" {
+  description = "Application S3 bucket name."
+  value       = module.app_s3.bucket_id
+}
+
+output "app_s3_bucket_arn" {
+  description = "Application S3 bucket ARN."
+  value       = module.app_s3.bucket_arn
+}
+
+output "app_dynamodb_table_name" {
+  description = "Application DynamoDB table name."
+  value       = module.app_dynamodb.table_name
+}
+
+output "app_dynamodb_table_arn" {
+  description = "Application DynamoDB table ARN."
+  value       = module.app_dynamodb.table_arn
+}

@@ -47,6 +47,18 @@ variable "root_volume_type" {
   default     = "gp3"
 }
 
+variable "iam_instance_profile" {
+  description = "IAM instance profile attached to the EC2 instance."
+  type        = string
+  default     = null
+}
+
+variable "user_data_file" {
+  description = "Path to the EC2 user-data shell script."
+  type        = string
+  default     = null
+}
+
 variable "tags" {
   description = "Additional EC2 tags."
   type        = map(string)
