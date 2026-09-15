@@ -84,8 +84,8 @@ variable "nat_gateway_count" {
   default     = 1
 
   validation {
-    condition     = var.nat_gateway_count >= 0 && var.nat_gateway_count <= length(var.availability_zones)
-    error_message = "nat_gateway_count must be between 0 and the number of availability zones."
+    condition     = var.nat_gateway_count >= 0
+    error_message = "nat_gateway_count must be zero or greater."
   }
 }
 
