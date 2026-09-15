@@ -10,15 +10,6 @@ on:
       - "**/*.tfvars.json"
       - ".github/workflows/terraform-ci.yml"
 
-  push:
-    branches:
-      - main
-    paths:
-      - "**/*.tf"
-      - "**/*.tfvars"
-      - "**/*.tfvars.json"
-      - ".github/workflows/terraform-ci.yml"
-
 permissions:
   contents: read
 
