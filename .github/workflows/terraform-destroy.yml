@@ -124,30 +124,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download approved destroy plan
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p destroy-artifact
-
-          gh run download "${{ inputs.plan_run_id }}" \
-            --repo "${{ github.repository }}" \
-            --name "terraform-destroy-plan-${{ inputs.environment }}-${{ inputs.plan_run_id }}" \
-            --dir destroy-artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-destroy-plan-${{ inputs.environment }}-${{ inputs.plan_run_id }}
+          path: destroy-artifact
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.plan_run_id }}
 
       - name: Verify downloaded artifact
         run: |
+          set -euo pipefail
+
           echo "Downloaded artifact contents:"
           find destroy-artifact -type f -print
-
-          if [ ! -d "destroy-artifact" ]; then
-            echo "ERROR: destroy-artifact directory was not created."
-            exit 1
-          fi
 
           PLAN_FILE=$(find destroy-artifact -type f -name "destroy.tfplan" -print -quit)
 
           if [ -z "$PLAN_FILE" ]; then
-            echo "ERROR: destroy.tfplan was not found in the downloaded artifact."
+            echo "ERROR: destroy.tfplan was not found."
             exit 1
           fi
 
@@ -156,18 +151,43 @@ jobs:
       - name: Read destroy plan metadata
         id: metadata
         run: |
+          set -euo pipefail
+
           SOURCE_SHA=$(find destroy-artifact -type f -name "destroy-plan-source-sha.txt" -print -quit)
           ENVIRONMENT_FILE=$(find destroy-artifact -type f -name "destroy-plan-environment.txt" -print -quit)
 
-          echo "source_sha=$(cat "$SOURCE_SHA")" >> "$GITHUB_OUTPUT"
-          echo "environment=$(cat "$ENVIRONMENT_FILE")" >> "$GITHUB_OUTPUT"
+          test -n "$SOURCE_SHA" || {
+            echo "ERROR: destroy-plan-source-sha.txt not found."
+            exit 1
+          }
+
+          test -n "$ENVIRONMENT_FILE" || {
+            echo "ERROR: destroy-plan-environment.txt not found."
+            exit 1
+          }
+
+          PLAN_SHA=$(tr -d '[:space:]' < "$SOURCE_SHA")
+          PLAN_ENVIRONMENT=$(tr -d '[:space:]' < "$ENVIRONMENT_FILE")
+
+          echo "source_sha=$PLAN_SHA" >> "$GITHUB_OUTPUT"
+          echo "environment=$PLAN_ENVIRONMENT" >> "$GITHUB_OUTPUT"
 
       - name: Verify destroy plan metadata
         run: |
+          set -euo pipefail
+
           if [ "${{ steps.metadata.outputs.environment }}" != "${{ inputs.environment }}" ]; then
-            echo "Destroy plan environment does not match requested environment."
+            echo "ERROR: Destroy plan environment does not match requested environment."
             exit 1
           fi
+
+          if [ -z "${{ steps.metadata.outputs.source_sha }}" ]; then
+            echo "ERROR: Destroy plan source SHA is empty."
+            exit 1
+          fi
+
+          echo "Destroy plan environment: ${{ steps.metadata.outputs.environment }}"
+          echo "Destroy plan source SHA: ${{ steps.metadata.outputs.source_sha }}"
 
       - name: Checkout planned source revision
         uses: actions/checkout@v4
