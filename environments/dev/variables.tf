@@ -26,4 +26,4 @@ variable "environment" {
   }
 }
 
-# DEV environment configuration
+# End-to-end PR deployment test
