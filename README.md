@@ -917,5 +917,3 @@ The enterprise Terraform foundation is established with:
 ```
 
 The current baseline is intentionally focused on the **Terraform platform and infrastructure delivery foundation**, with application resources and account governance excluded from this phase.
-
-<!-- CI validation test -->
