@@ -33,10 +33,10 @@ output "private_route_table_ids" {
   value       = module.vpc.private_route_table_ids
 }
 
-output "nat_gateway_ids" {
-  description = "IDs of the shared NAT Gateways."
-  value       = module.vpc.nat_gateway_ids
-}
+#output "nat_gateway_ids" {
+#  description = "IDs of the shared NAT Gateways."
+#  value       = module.vpc.nat_gateway_ids
+#}
 
 output "internet_gateway_id" {
   description = "ID of the shared Internet Gateway."
