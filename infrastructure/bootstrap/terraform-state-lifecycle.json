@@ -1,0 +1,14 @@
+{
+  "Rules": [
+    {
+      "ID": "TerraformStateRetention",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": ""
+      },
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 365
+      }
+    }
+  ]
+}
