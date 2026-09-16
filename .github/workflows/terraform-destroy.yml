@@ -125,6 +125,7 @@ jobs:
         with:
           name: terraform-destroy-plan-${{ inputs.environment }}-${{ inputs.plan_run_id }}
           path: destroy-artifact
+          repository: ${{ github.repository }}
           github-token: ${{ github.token }}
           run-id: ${{ inputs.plan_run_id }}
 
@@ -167,16 +168,19 @@ jobs:
       - name: Restore approved destroy plan
         shell: bash
         run: |
+          echo "Downloaded artifact contents:"
+          find destroy-artifact -type f -print
+
           PLAN_FILE=$(find destroy-artifact -type f -name "destroy.tfplan" -print -quit)
 
           if [ -z "$PLAN_FILE" ]; then
-            echo "ERROR: destroy.tfplan was not found in the downloaded artifact."
-            echo "Downloaded artifact contents:"
-            find destroy-artifact -type f -print
+            echo "ERROR: Approved destroy plan was not found."
             exit 1
           fi
 
-          echo "Using destroy plan: $PLAN_FILE"
+          echo "Using approved destroy plan: $PLAN_FILE"
+
+          mkdir -p "environments/${{ inputs.environment }}"
           cp "$PLAN_FILE" "environments/${{ inputs.environment }}/destroy.tfplan"
 
       - name: Terraform Destroy Apply
