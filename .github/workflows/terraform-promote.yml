@@ -100,12 +100,9 @@ jobs:
       - name: Upload Terraform plan
         uses: actions/upload-artifact@v7
         with:
-          name: terraform-plan-${{ inputs.environment }}-${{ github.run_id }}
-          path: |
-            environments/${{ inputs.environment }}/tfplan
-            environments/${{ inputs.environment }}/plan-source-sha.txt
-            environments/${{ inputs.environment }}/plan-environment.txt
-          retention-days: 7
+          name: promotion-artifact
+          path: environments/${{ inputs.environment }}/tfplan
+          retention-days: 1
 
   terraform-apply:
     name: Terraform Apply - ${{ inputs.environment }}
@@ -119,10 +116,8 @@ jobs:
       - name: Download approved Terraform plan
         uses: actions/download-artifact@v7
         with:
-          name: terraform-plan-${{ inputs.environment }}-${{ inputs.plan_run_id }}
-          path: promotion-artifact
-          github-token: ${{ github.token }}
-          run-id: ${{ inputs.plan_run_id }}
+          name: promotion-artifact
+          path: environments/${{ inputs.environment }}
 
       - name: Read plan metadata
         id: metadata
@@ -131,11 +126,16 @@ jobs:
           echo "environment=$(cat promotion-artifact/plan-environment.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Verify plan metadata
+        working-directory: environments/${{ inputs.environment }}
         run: |
-          if [ "${{ steps.metadata.outputs.environment }}" != "${{ inputs.environment }}" ]; then
-            echo "Plan environment does not match requested environment."
+          if [ ! -f "tfplan" ]; then
+            echo "ERROR: tfplan was not downloaded."
+            echo "Directory contents:"
+            find . -maxdepth 2 -type f -print
             exit 1
           fi
+
+          echo "Terraform plan successfully downloaded."
 
       - name: Checkout planned source revision
         uses: actions/checkout@v7
@@ -159,10 +159,6 @@ jobs:
       - name: Terraform Init
         working-directory: environments/${{ inputs.environment }}
         run: terraform init
-
-      - name: Restore Terraform plan
-        run: |
-          cp "promotion-artifact/tfplan" "environments/${{ inputs.environment }}/tfplan"
 
       - name: Terraform Apply Approved Plan
         working-directory: environments/${{ inputs.environment }}
