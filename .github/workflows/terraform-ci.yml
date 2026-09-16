@@ -24,6 +24,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.0"
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v5
+
+      - name: Initialize TFLint
+        run: tflint --init
+
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
 

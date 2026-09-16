@@ -1,44 +1,27 @@
 repos:
-  # ---------------------------------------------------------------------------
-  # General repository hygiene
-  # ---------------------------------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: check-added-large-files
         args:
           - --maxkb=1024
-
       - id: check-merge-conflict
-
       - id: check-yaml
-
       - id: check-json
-
       - id: end-of-file-fixer
-
       - id: trailing-whitespace
-
       - id: mixed-line-ending
         args:
           - --fix=lf
-
       - id: detect-private-key
 
-  # ---------------------------------------------------------------------------
-  # Secret scanning
-  # ---------------------------------------------------------------------------
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.30.0
     hooks:
       - id: gitleaks
 
-  # ---------------------------------------------------------------------------
-  # Terraform - native Windows executables
-  # ---------------------------------------------------------------------------
   - repo: local
     hooks:
-      # Terraform formatting
       - id: terraform-fmt
         name: Terraform Format
         entry: terraform
@@ -50,7 +33,6 @@ repos:
           - -recursive
         files: \.tf$
 
-      # TFLint - shared infrastructure
       - id: tflint-shared
         name: TFLint - Shared
         entry: tflint
@@ -61,7 +43,6 @@ repos:
           - --format=compact
         files: ^infrastructure/shared/.*\.tf$
 
-      # TFLint - dev
       - id: tflint-dev
         name: TFLint - Dev
         entry: tflint
@@ -72,7 +53,6 @@ repos:
           - --format=compact
         files: ^environments/dev/.*\.tf$
 
-      # TFLint - staging
       - id: tflint-staging
         name: TFLint - Staging
         entry: tflint
@@ -83,7 +63,6 @@ repos:
           - --format=compact
         files: ^environments/staging/.*\.tf$
 
-      # TFLint - prod
       - id: tflint-prod
         name: TFLint - Prod
         entry: tflint
@@ -94,12 +73,10 @@ repos:
           - --format=compact
         files: ^environments/prod/.*\.tf$
 
-      # Checkov - repository-wide Terraform security scan
+  - repo: https://github.com/bridgecrewio/checkov
+    rev: 3.2.495
+    hooks:
       - id: checkov
-        name: Checkov
-        entry: checkov
-        language: system
-        pass_filenames: false
         args:
           - -d
           - .
