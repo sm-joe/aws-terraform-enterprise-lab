@@ -1,0 +1,60 @@
+name: Terraform PR Plan
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "**/*.tf"
+      - "**/*.tfvars"
+      - "**/*.tfvars.json"
+      - ".github/workflows/terraform-pr-plan.yml"
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: read
+
+jobs:
+  terraform-plan:
+    name: Terraform Plan - ${{ matrix.working-directory }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        working-directory:
+          - infrastructure/shared
+          - environments/dev
+          - environments/staging
+          - environments/prod
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.working-directory }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.0"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-south-1
+          role-to-assume: arn:aws:iam::638631156706:role/GitHubActions-Terraform-PR
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -input=false -no-color

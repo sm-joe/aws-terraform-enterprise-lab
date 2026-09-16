@@ -1,9 +1,3 @@
-variable "aws_profile" {
-  description = "AWS CLI profile used by Terraform."
-  type        = string
-  default     = "default"
-}
-
 variable "aws_region" {
   description = "AWS region for shared infrastructure."
   type        = string
