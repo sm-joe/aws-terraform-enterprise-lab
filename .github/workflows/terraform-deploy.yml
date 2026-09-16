@@ -1,4 +1,4 @@
-name: Terraform Deployment
+name: Terraform Dev Deployment
 
 on:
   push:
@@ -18,21 +18,25 @@ permissions:
   contents: read
 
 jobs:
-  terraform-dev:
-    name: Terraform Plan and Apply - Dev
+  terraform-deploy:
+    name: Terraform Plan, Safety Gate and Apply - Dev
     runs-on: ubuntu-latest
-
     environment: dev
+
+    defaults:
+      run:
+        working-directory: environments/dev
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Verify main branch
-        if: github.ref != 'refs/heads/main'
         run: |
-          echo "Deployment workflows must run from main."
-          exit 1
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "This workflow must run from the main branch."
+            exit 1
+          fi
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -44,18 +48,53 @@ jobs:
         with:
           aws-region: ${{ vars.AWS_REGION }}
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-Terraform-Dev
 
       - name: Verify AWS identity
         run: aws sts get-caller-identity
 
       - name: Terraform Init
-        working-directory: environments/dev
         run: terraform init
 
       - name: Terraform Plan
-        working-directory: environments/dev
         run: terraform plan -out=tfplan
 
+      - name: Terraform Plan JSON
+        run: terraform show -json tfplan > tfplan.json
+
+      - name: Terraform Safety Gate
+        shell: bash
+        run: |
+          echo "Checking Terraform plan for resource deletions..."
+
+          DELETE_COUNT=$(jq '
+            [
+              .resource_changes[]?
+              | select(.change.actions | index("delete"))
+            ]
+            | length
+          ' tfplan.json)
+
+          echo "Resources with delete actions: ${DELETE_COUNT}"
+
+          if [ "${DELETE_COUNT}" -gt 0 ]; then
+            echo ""
+            echo "Terraform Safety Gate FAILED."
+            echo "The DEV deployment plan contains resource deletion(s)."
+            echo ""
+            echo "Resources marked for deletion:"
+            jq -r '
+              .resource_changes[]?
+              | select(.change.actions | index("delete"))
+              | " - \(.address) [\(.change.actions | join(", "))]"
+            ' tfplan.json
+
+            exit 1
+          fi
+
+          echo ""
+          echo "Terraform Safety Gate PASSED."
+          echo "No resource deletions detected."
+
       - name: Terraform Apply
-        working-directory: environments/dev
         run: terraform apply -auto-approve tfplan
