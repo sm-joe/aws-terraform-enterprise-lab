@@ -3,14 +3,6 @@ name: Terraform Promotion
 on:
   workflow_dispatch:
     inputs:
-      action:
-        description: "Promotion action"
-        required: true
-        type: choice
-        options:
-          - plan
-          - apply
-
       environment:
         description: "Target environment"
         required: true
@@ -19,55 +11,26 @@ on:
           - staging
           - prod
 
-      plan_run_id:
-        description: "Required for apply: GitHub Actions run ID that generated the approved plan"
-        required: false
-        type: string
-
 permissions:
   id-token: write
   contents: read
-  actions: read
 
 jobs:
-  validate-input:
-    name: Validate Promotion Request
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Verify main branch
-        run: |
-          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
-            echo "Promotion workflows must run from main."
-            exit 1
-          fi
-
-      - name: Validate apply request
-        if: inputs.action == 'apply'
-        run: |
-          if [ -z "${{ inputs.plan_run_id }}" ]; then
-            echo "plan_run_id is required when action is apply."
-            exit 1
-          fi
-
-  terraform-plan:
-    name: Terraform Plan - ${{ inputs.environment }}
-    if: inputs.action == 'plan'
-    needs: validate-input
+  terraform-promote:
+    name: Terraform Plan and Apply - ${{ inputs.environment }}
     runs-on: ubuntu-latest
 
     environment: ${{ inputs.environment }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Verify main branch
+        if: github.ref != 'refs/heads/main'
         run: |
-          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
-            echo "Promotion workflows must run from main."
-            exit 1
-          fi
+          echo "Promotion workflows must run from main."
+          exit 1
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -75,7 +38,7 @@ jobs:
           terraform_version: "1.15.0"
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ap-south-1
           role-to-assume: ${{ inputs.environment == 'staging' && 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Staging' || 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Prod' }}
@@ -89,77 +52,8 @@ jobs:
 
       - name: Terraform Plan
         working-directory: environments/${{ inputs.environment }}
-        run: terraform plan -out=tfplan
+        run: terraform plan
 
-      - name: Save plan metadata
+      - name: Terraform Apply
         working-directory: environments/${{ inputs.environment }}
-        run: |
-          echo "${GITHUB_SHA}" > plan-source-sha.txt
-          echo "${{ inputs.environment }}" > plan-environment.txt
-
-      - name: Upload Terraform plan
-        uses: actions/upload-artifact@v7
-        with:
-          name: promotion-artifact
-          path: environments/${{ inputs.environment }}/tfplan
-          retention-days: 1
-
-  terraform-apply:
-    name: Terraform Apply - ${{ inputs.environment }}
-    if: inputs.action == 'apply'
-    needs: validate-input
-    runs-on: ubuntu-latest
-
-    environment: ${{ inputs.environment }}
-
-    steps:
-      - name: Download approved Terraform plan
-        uses: actions/download-artifact@v7
-        with:
-          name: promotion-artifact
-          path: environments/${{ inputs.environment }}
-
-      - name: Read plan metadata
-        id: metadata
-        run: |
-          echo "source_sha=$(cat promotion-artifact/plan-source-sha.txt)" >> "$GITHUB_OUTPUT"
-          echo "environment=$(cat promotion-artifact/plan-environment.txt)" >> "$GITHUB_OUTPUT"
-
-      - name: Verify plan metadata
-        working-directory: environments/${{ inputs.environment }}
-        run: |
-          if [ ! -f "tfplan" ]; then
-            echo "ERROR: tfplan was not downloaded."
-            echo "Directory contents:"
-            find . -maxdepth 2 -type f -print
-            exit 1
-          fi
-
-          echo "Terraform plan successfully downloaded."
-
-      - name: Checkout planned source revision
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ steps.metadata.outputs.source_sha }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.15.0"
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          aws-region: ap-south-1
-          role-to-assume: ${{ inputs.environment == 'staging' && 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Staging' || 'arn:aws:iam::638631156706:role/GitHubActions-Terraform-Prod' }}
-
-      - name: Verify AWS identity
-        run: aws sts get-caller-identity
-
-      - name: Terraform Init
-        working-directory: environments/${{ inputs.environment }}
-        run: terraform init
-
-      - name: Terraform Apply Approved Plan
-        working-directory: environments/${{ inputs.environment }}
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve
