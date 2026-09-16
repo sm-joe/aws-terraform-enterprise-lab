@@ -1,6 +1,16 @@
 name: Terraform Deployment
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "modules/**/*.tf"
+      - "environments/dev/**/*.tf"
+      - "environments/dev/**/*.tfvars"
+      - "environments/dev/**/*.tfvars.json"
+      - ".github/workflows/terraform-deploy.yml"
+
   workflow_dispatch:
 
 permissions:
@@ -16,7 +26,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Verify main branch
         if: github.ref != 'refs/heads/main'
@@ -30,10 +40,10 @@ jobs:
           terraform_version: "1.15.0"
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: ap-south-1
-          role-to-assume: arn:aws:iam::638631156706:role/GitHubActions-Terraform-Dev
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
 
       - name: Verify AWS identity
         run: aws sts get-caller-identity
