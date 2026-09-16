@@ -15,5 +15,6 @@ module "vpc" {
     Component = "networking"
     Tier      = "shared"
     Purpose   = "shared-network"
+    PRTest    = "true"
   }
 }
