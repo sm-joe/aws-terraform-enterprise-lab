@@ -25,7 +25,3 @@ variable "environment" {
     error_message = "Environment must be dev, staging, or prod."
   }
 }
-
-# Atlantis Testing #
-# Atlantis Testing #
-# Atlantis Testing #

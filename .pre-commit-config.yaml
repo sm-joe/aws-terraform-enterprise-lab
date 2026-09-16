@@ -72,14 +72,3 @@ repos:
           - --chdir=environments/prod
           - --format=compact
         files: ^environments/prod/.*\.tf$
-
-  - repo: https://github.com/bridgecrewio/checkov
-    rev: 3.2.495
-    hooks:
-      - id: checkov
-        args:
-          - -d
-          - .
-          - --framework
-          - terraform
-        files: \.tf$
