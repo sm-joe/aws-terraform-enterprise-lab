@@ -8,14 +8,48 @@ on:
       - "**/*.tf"
       - "**/*.tfvars"
       - "**/*.tfvars.json"
+      - ".pre-commit-config.yaml"
+      - ".tflint.hcl"
       - ".github/workflows/terraform-ci.yml"
 
 permissions:
   contents: read
 
 jobs:
-  terraform-checks:
-    name: Terraform Checks
+  pre-commit:
+    name: Pre-commit Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.0"
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v5
+
+      - name: Initialize TFLint
+        run: tflint --init
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Install pre-commit and Checkov
+        run: |
+          python -m pip install --upgrade pip
+          pip install pre-commit checkov
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+
+  terraform-validate:
+    name: Terraform Validate - ${{ matrix.working-directory }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -40,29 +74,8 @@ jobs:
         with:
           terraform_version: "1.15.0"
 
-      - name: Terraform Format Check
-        run: terraform fmt -check -recursive
-
       - name: Terraform Init
         run: terraform init -backend=false
 
       - name: Terraform Validate
         run: terraform validate
-
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v5
-
-      - name: Initialize TFLint
-        run: tflint --init
-
-      - name: Run TFLint
-        run: tflint --format compact
-
-      - name: Run Checkov Scan
-        if: matrix.working-directory == 'infrastructure/shared'
-        uses: bridgecrewio/checkov-action@v12
-        with:
-          directory: ${{ matrix.working-directory }}
-          framework: terraform
-          quiet: true
-          soft_fail: false

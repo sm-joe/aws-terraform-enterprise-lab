@@ -29,7 +29,7 @@ repos:
   # Secret scanning
   # ---------------------------------------------------------------------------
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.1
+    rev: v8.30.0
     hooks:
       - id: gitleaks
 
@@ -38,66 +38,63 @@ repos:
   # ---------------------------------------------------------------------------
   - repo: local
     hooks:
+      # Terraform formatting
       - id: terraform-fmt
         name: Terraform Format
         entry: terraform
         language: system
+        pass_filenames: false
         args:
           - fmt
           - -check
           - -recursive
         files: \.tf$
 
-      - id: terraform-validate-shared
-        name: Terraform Validate - Shared
-        entry: terraform
-        language: system
-        pass_filenames: false
-        args:
-          - -chdir=infrastructure/shared
-          - validate
-        files: ^infrastructure/shared/.*\.tf$
-
-      - id: terraform-validate-dev
-        name: Terraform Validate - Dev
-        entry: terraform
-        language: system
-        pass_filenames: false
-        args:
-          - -chdir=environments/dev
-          - validate
-        files: ^environments/dev/.*\.tf$
-
-      - id: terraform-validate-staging
-        name: Terraform Validate - Staging
-        entry: terraform
-        language: system
-        pass_filenames: false
-        args:
-          - -chdir=environments/staging
-          - validate
-        files: ^environments/staging/.*\.tf$
-
-      - id: terraform-validate-prod
-        name: Terraform Validate - Prod
-        entry: terraform
-        language: system
-        pass_filenames: false
-        args:
-          - -chdir=environments/prod
-          - validate
-        files: ^environments/prod/.*\.tf$
-
-      - id: tflint
-        name: TFLint
+      # TFLint - shared infrastructure
+      - id: tflint-shared
+        name: TFLint - Shared
         entry: tflint
         language: system
         pass_filenames: false
         args:
           - --chdir=infrastructure/shared
           - --format=compact
-        files: \.tf$
+        files: ^infrastructure/shared/.*\.tf$
 
+      # TFLint - dev
+      - id: tflint-dev
+        name: TFLint - Dev
+        entry: tflint
+        language: system
+        pass_filenames: false
+        args:
+          - --chdir=environments/dev
+          - --format=compact
+        files: ^environments/dev/.*\.tf$
+
+      # TFLint - staging
+      - id: tflint-staging
+        name: TFLint - Staging
+        entry: tflint
+        language: system
+        pass_filenames: false
+        args:
+          - --chdir=environments/staging
+          - --format=compact
+        files: ^environments/staging/.*\.tf$
+
+      # TFLint - prod
+      - id: tflint-prod
+        name: TFLint - Prod
+        entry: tflint
+        language: system
+        pass_filenames: false
+        args:
+          - --chdir=environments/prod
+          - --format=compact
+        files: ^environments/prod/.*\.tf$
+
+      # Checkov - repository-wide Terraform security scan
       - id: checkov
         name: Checkov
         entry: checkov
