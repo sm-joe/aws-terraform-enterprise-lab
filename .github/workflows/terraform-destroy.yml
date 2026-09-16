@@ -166,7 +166,7 @@ jobs:
 
       - name: Restore approved destroy plan
         run: |
-          cp "destroy-artifact/destroy.tfplan" "environments/${{ inputs.environment }}/destroy.tfplan"
+          cp "destroy-artifact/tfplan" "environments/${{ inputs.environment }}/destroy.tfplan"
 
       - name: Terraform Destroy Apply
         working-directory: environments/${{ inputs.environment }}
