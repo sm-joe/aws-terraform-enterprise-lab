@@ -8,6 +8,9 @@
       },
       "NoncurrentVersionExpiration": {
         "NoncurrentDays": 365
+      },
+      "abort_incomplete_multipart_upload": {
+        "days_after_initiation" : 7
       }
     }
   ]

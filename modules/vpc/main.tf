@@ -1,10 +1,6 @@
-data "aws_region" "current" {}
-
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
 resource "aws_vpc" "this" {
+  #checkov:skip=CKV2_AWS_11:VPC Flow Logs are intentionally not enabled for this lab environment.
+  #checkov:skip=CKV2_AWS_12:Default VPC security group restriction is intentionally not enforced for this lab baseline.
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -29,6 +25,7 @@ resource "aws_internet_gateway" "this" {
 }
 
 resource "aws_subnet" "public" {
+  #checkov:skip=CKV_AWS_130:Public IP assignment is intentional because these are explicitly designed public subnets for the lab.
   count = length(var.availability_zones)
 
   vpc_id                  = aws_vpc.this.id

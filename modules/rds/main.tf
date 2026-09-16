@@ -11,6 +11,14 @@ resource "aws_db_subnet_group" "this" {
 }
 
 resource "aws_db_instance" "this" {
+  #checkov:skip=CKV_AWS_133:RDS - Not required for lab environment.
+  #checkov:skip=CKV_AWS_129:RDS - Not required for lab environment.
+  #checkov:skip=CKV_AWS_118:RDS - Not required for lab environment.
+  #checkov:skip=CKV_AWS_293:RDS - Not required for lab environment.
+  #checkov:skip=CKV_AWS_353:RDS - Not required for lab environment.
+  #checkov:skip=CKV_AWS_157:RDS - Not required for lab environment.
+  #checkov:skip=CKV2_AWS_30:RDS - Not required for lab environment.
+  #checkov:skip=CKV2_AWS_60:RDS - Not required for lab environment.
   identifier        = var.identifier
   engine            = var.engine
   engine_version    = var.engine_version

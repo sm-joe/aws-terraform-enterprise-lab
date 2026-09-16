@@ -12,6 +12,10 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "terraform_state" {
+  #checkov:skip=CKV_AWS_18:S3 access logging is intentionally not enabled for this lab Terraform state bucket.
+  #checkov:skip=CKV_AWS_144:Cross-region replication is intentionally not configured for this single-region lab.
+  #checkov:skip=CKV_AWS_145:AWS-managed SSE-S3 encryption is intentionally used; customer-managed KMS CMKs are not required for this lab.
+  #checkov:skip=CKV2_AWS_62:Event notifications for S3 not required.
   bucket = var.state_bucket_name
 }
 
@@ -57,6 +61,14 @@ resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
     id     = "noncurrent-version-cleanup"
     status = "Enabled"
 
+    expiration {
+      days = 90
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+
     noncurrent_version_expiration {
       noncurrent_days = 90
     }
@@ -64,6 +76,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
 }
 
 resource "aws_dynamodb_table" "terraform_locks" {
+  #checkov:skip=CKV_AWS_119:Terraform state locking table uses AWS-managed DynamoDB encryption by design; customer-managed KMS CMKs are intentionally not used.
   name         = var.lock_table_name
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
@@ -71,5 +84,9 @@ resource "aws_dynamodb_table" "terraform_locks" {
   attribute {
     name = "LockID"
     type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
   }
 }

@@ -57,3 +57,12 @@ jobs:
 
       - name: Run TFLint
         run: tflint --format compact
+
+      - name: Run Checkov Scan
+        if: matrix.working-directory == 'infrastructure/shared'
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: ${{ matrix.working-directory }}
+          framework: terraform
+          quiet: true
+          soft_fail: false

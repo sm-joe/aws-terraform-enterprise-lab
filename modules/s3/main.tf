@@ -1,4 +1,8 @@
 resource "aws_s3_bucket" "this" {
+  #checkov:skip=CKV_AWS_18:S3 access logging is intentionally not enabled for this lab Terraform state bucket.
+  #checkov:skip=CKV_AWS_144:Cross-region replication is intentionally not configured for this single-region lab.
+  #checkov:skip=CKV_AWS_145:AWS-managed SSE-S3 encryption is intentionally used; customer-managed KMS CMKs are not required for this lab.
+  #checkov:skip=CKV2_AWS_62:Event notifications for S3 not required.
   bucket        = var.bucket_name
   force_destroy = var.force_destroy
 

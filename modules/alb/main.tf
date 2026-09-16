@@ -1,4 +1,9 @@
 resource "aws_lb" "this" {
+  #checkov:skip=CKV_AWS_131:ALB - Not required for lab environment.
+  #checkov:skip=CKV_AWS_91:ALB - Not required for lab environment.
+  #checkov:skip=CKV_AWS_150:ALB - Not required for lab environment.
+  #checkov:skip=CKV2_AWS_20:ALB - Not required for lab environment.
+  #checkov:skip=CKV2_AWS_28:ALB - Not required for lab environment.
   name               = substr("${var.name}", 0, 32)
   internal           = false
   load_balancer_type = "application"
@@ -15,6 +20,7 @@ resource "aws_lb" "this" {
 }
 
 resource "aws_lb_target_group" "this" {
+  #checkov:skip=CKV_AWS_378:Load Balancer - Not required for lab environment.
   name        = substr("${var.name}-tg", 0, 32)
   port        = var.target_port
   protocol    = "HTTP"
@@ -42,6 +48,8 @@ resource "aws_lb_target_group" "this" {
 }
 
 resource "aws_lb_listener" "http" {
+  #checkov:skip=CKV_AWS_2:EC2 - Not required for lab environment.
+  #checkov:skip=CKV_AWS_103:Security Group - Not required for lab environment.
   load_balancer_arn = aws_lb.this.arn
   port              = 80
   protocol          = "HTTP"

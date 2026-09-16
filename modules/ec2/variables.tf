@@ -30,6 +30,12 @@ variable "associate_public_ip_address" {
   default     = false
 }
 
+variable "ebs_optimized" {
+  description = "EBS Optimization"
+  type        = bool
+  default     = true
+}
+
 variable "root_volume_size" {
   description = "Root EBS volume size in GiB."
   type        = number

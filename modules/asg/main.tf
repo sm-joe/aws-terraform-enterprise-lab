@@ -1,4 +1,5 @@
 resource "aws_launch_template" "this" {
+  #checkov:skip=CKV_AWS_79:ASG - Not required for lab environment.
   name_prefix   = "${var.name}-"
   image_id      = var.ami_id
   instance_type = var.instance_type

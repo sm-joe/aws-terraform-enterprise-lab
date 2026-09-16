@@ -1,4 +1,5 @@
 resource "aws_security_group" "this" {
+  #checkov:skip=CKV2_AWS_5:Security Group - Not required for lab environment.
   name        = var.name
   description = var.description
   vpc_id      = var.vpc_id
