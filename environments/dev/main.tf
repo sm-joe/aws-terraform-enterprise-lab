@@ -73,3 +73,5 @@ module "app_ssm_policy_attachment" {
   role_name  = module.app_instance_role.role_name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
+
+### Demo Testing ###
