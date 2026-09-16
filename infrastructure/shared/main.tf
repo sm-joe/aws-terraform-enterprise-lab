@@ -17,3 +17,5 @@ module "vpc" {
     Purpose   = "shared-network"
   }
 }
+
+# CI validation test
