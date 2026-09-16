@@ -11,6 +11,10 @@ on:
           - staging
           - prod
 
+concurrency:
+  group: terraform-${{ inputs.environment }}
+  cancel-in-progress: false
+
 permissions:
   id-token: write
   contents: read
@@ -123,6 +127,13 @@ jobs:
           echo ""
           echo "Terraform Safety Gate PASSED."
           echo "No resource deletions or replacements detected."
+
+      - name: Upload Terraform plan JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-dev-plan-${{ github.run_number }}
+          path: environments/dev/tfplan.json
+          retention-days: 7
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan

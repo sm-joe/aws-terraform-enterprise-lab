@@ -13,9 +13,13 @@ on:
           - prod
 
       confirmation:
-        description: "Enter DESTROY exactly"
+        description: "Enter DESTROY <environment> exactly, e.g. DESTROY dev"
         required: true
         type: string
+
+concurrency:
+  group: terraform-destroy-${{ inputs.environment }}
+  cancel-in-progress: false
 
 permissions:
   id-token: write
@@ -36,18 +40,22 @@ jobs:
 
       - name: Verify confirmation
         run: |
-          if [ "${{ inputs.confirmation }}" != "DESTROY" ]; then
-            echo "Confirmation must be exactly DESTROY."
+          EXPECTED="DESTROY ${{ inputs.environment }}"
+
+          if [ "${{ inputs.confirmation }}" != "${EXPECTED}" ]; then
+            echo "Confirmation must be exactly: ${EXPECTED}"
             exit 1
           fi
+
+          echo "Destroy confirmation accepted for ${{
+            inputs.environment
+          }}."
 
   terraform-destroy-plan:
     name: Terraform Destroy Plan - ${{ inputs.environment }}
     needs: validate
     runs-on: ubuntu-latest
 
-    # Uses your existing dev/staging/prod environment.
-    # Configure required reviewers on prod/staging/dev as appropriate.
     environment: ${{ inputs.environment }}
 
     steps:
@@ -88,9 +96,6 @@ jobs:
     needs: terraform-destroy-plan
     runs-on: ubuntu-latest
 
-    # IMPORTANT:
-    # This is your existing environment: dev/staging/prod.
-    # The job waits here if that environment has required reviewers.
     environment: ${{ inputs.environment }}
 
     steps:
