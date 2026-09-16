@@ -120,20 +120,47 @@ jobs:
     environment: ${{ inputs.environment }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download approved destroy plan
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-destroy-plan-${{ inputs.environment }}-${{ inputs.plan_run_id }}
-          path: destroy-artifact
-          repository: ${{ github.repository }}
-          github-token: ${{ github.token }}
-          run-id: ${{ inputs.plan_run_id }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p destroy-artifact
+
+          gh run download "${{ inputs.plan_run_id }}" \
+            --repo "${{ github.repository }}" \
+            --name "terraform-destroy-plan-${{ inputs.environment }}-${{ inputs.plan_run_id }}" \
+            --dir destroy-artifact
+
+      - name: Verify downloaded artifact
+        run: |
+          echo "Downloaded artifact contents:"
+          find destroy-artifact -type f -print
+
+          if [ ! -d "destroy-artifact" ]; then
+            echo "ERROR: destroy-artifact directory was not created."
+            exit 1
+          fi
+
+          PLAN_FILE=$(find destroy-artifact -type f -name "destroy.tfplan" -print -quit)
+
+          if [ -z "$PLAN_FILE" ]; then
+            echo "ERROR: destroy.tfplan was not found in the downloaded artifact."
+            exit 1
+          fi
+
+          echo "Approved destroy plan found: $PLAN_FILE"
 
       - name: Read destroy plan metadata
         id: metadata
         run: |
-          echo "source_sha=$(cat destroy-artifact/destroy-plan-source-sha.txt)" >> "$GITHUB_OUTPUT"
-          echo "environment=$(cat destroy-artifact/destroy-plan-environment.txt)" >> "$GITHUB_OUTPUT"
+          SOURCE_SHA=$(find destroy-artifact -type f -name "destroy-plan-source-sha.txt" -print -quit)
+          ENVIRONMENT_FILE=$(find destroy-artifact -type f -name "destroy-plan-environment.txt" -print -quit)
+
+          echo "source_sha=$(cat "$SOURCE_SHA")" >> "$GITHUB_OUTPUT"
+          echo "environment=$(cat "$ENVIRONMENT_FILE")" >> "$GITHUB_OUTPUT"
 
       - name: Verify destroy plan metadata
         run: |
@@ -166,21 +193,8 @@ jobs:
         run: terraform init
 
       - name: Restore approved destroy plan
-        shell: bash
         run: |
-          echo "Downloaded artifact contents:"
-          find destroy-artifact -type f -print
-
           PLAN_FILE=$(find destroy-artifact -type f -name "destroy.tfplan" -print -quit)
-
-          if [ -z "$PLAN_FILE" ]; then
-            echo "ERROR: Approved destroy plan was not found."
-            exit 1
-          fi
-
-          echo "Using approved destroy plan: $PLAN_FILE"
-
-          mkdir -p "environments/${{ inputs.environment }}"
           cp "$PLAN_FILE" "environments/${{ inputs.environment }}/destroy.tfplan"
 
       - name: Terraform Destroy Apply
