@@ -25,3 +25,5 @@ variable "environment" {
     error_message = "Environment must be dev, staging, or prod."
   }
 }
+
+# DEV environment configuration
