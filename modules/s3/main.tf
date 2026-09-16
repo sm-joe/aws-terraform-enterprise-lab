@@ -5,7 +5,9 @@ resource "aws_s3_bucket" "this" {
   tags = merge(
     var.tags,
     {
-      Name = var.bucket_name
+      Name          = var.bucket_name
+      Purpose       = "terraform-promotion-test"
+      ChangeVersion = "v2"
     }
   )
 }
