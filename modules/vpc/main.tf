@@ -83,34 +83,34 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_eip" "nat" {
-  count = var.enable_nat_gateway ? var.nat_gateway_count : 0
+#resource "aws_eip" "nat" {
+#  count = var.enable_nat_gateway ? var.nat_gateway_count : 0
 
-  domain = "vpc"
+#  domain = "vpc"
 
-  tags = merge(
-    var.tags,
-    {
-      Name = "${var.name}-nat-eip-${var.availability_zones[count.index]}"
-    }
-  )
-}
+#  tags = merge(
+#    var.tags,
+#    {
+#      Name = "${var.name}-nat-eip-${var.availability_zones[count.index]}"
+#    }
+#  )
+#}
 
-resource "aws_nat_gateway" "this" {
-  count = var.enable_nat_gateway ? var.nat_gateway_count : 0
+#resource "aws_nat_gateway" "this" {
+#  count = var.enable_nat_gateway ? var.nat_gateway_count : 0
 
-  allocation_id = aws_eip.nat[count.index].id
-  subnet_id     = aws_subnet.public[count.index].id
+#  allocation_id = aws_eip.nat[count.index].id
+#  subnet_id     = aws_subnet.public[count.index].id
 
-  depends_on = [aws_internet_gateway.this]
+#  depends_on = [aws_internet_gateway.this]
 
-  tags = merge(
-    var.tags,
-    {
-      Name = "${var.name}-nat-${var.availability_zones[count.index]}"
-    }
-  )
-}
+#  tags = merge(
+#    var.tags,
+#    {
+#      Name = "${var.name}-nat-${var.availability_zones[count.index]}"
+#    }
+#  )
+#}
 
 resource "aws_route_table" "private" {
   count = length(var.availability_zones)
@@ -126,13 +126,13 @@ resource "aws_route_table" "private" {
   )
 }
 
-resource "aws_route" "private_nat" {
-  count = var.enable_nat_gateway ? length(var.availability_zones) : 0
+#resource "aws_route" "private_nat" {
+#  count = var.enable_nat_gateway ? length(var.availability_zones) : 0
 
-  route_table_id         = aws_route_table.private[count.index].id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.this[count.index % var.nat_gateway_count].id
-}
+#  route_table_id         = aws_route_table.private[count.index].id
+#  destination_cidr_block = "0.0.0.0/0"
+#  nat_gateway_id         = aws_nat_gateway.this[count.index % var.nat_gateway_count].id
+#}
 
 resource "aws_route_table_association" "private" {
   count = length(var.availability_zones)
