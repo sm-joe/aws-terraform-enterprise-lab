@@ -50,6 +50,8 @@ jobs:
 
   terraform-validate:
     name: Terraform Validate - ${{ matrix.working-directory }}
+    needs:
+      - pre-commit
     runs-on: ubuntu-latest
 
     strategy:
