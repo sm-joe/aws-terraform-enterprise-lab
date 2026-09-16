@@ -165,8 +165,19 @@ jobs:
         run: terraform init
 
       - name: Restore approved destroy plan
+        shell: bash
         run: |
-          cp "destroy-artifact/tfplan" "environments/${{ inputs.environment }}/destroy.tfplan"
+          PLAN_FILE=$(find destroy-artifact -type f -name "destroy.tfplan" -print -quit)
+
+          if [ -z "$PLAN_FILE" ]; then
+            echo "ERROR: destroy.tfplan was not found in the downloaded artifact."
+            echo "Downloaded artifact contents:"
+            find destroy-artifact -type f -print
+            exit 1
+          fi
+
+          echo "Using destroy plan: $PLAN_FILE"
+          cp "$PLAN_FILE" "environments/${{ inputs.environment }}/destroy.tfplan"
 
       - name: Terraform Destroy Apply
         working-directory: environments/${{ inputs.environment }}
