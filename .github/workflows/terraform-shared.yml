@@ -3,6 +3,10 @@ name: Terraform Shared Infrastructure
 on:
   workflow_dispatch:
 
+concurrency:
+  group: terraform-shared
+  cancel-in-progress: false
+
 permissions:
   id-token: write
   contents: read
@@ -115,6 +119,13 @@ jobs:
           echo ""
           echo "Terraform Safety Gate PASSED."
           echo "No resource deletions or replacements detected."
+
+      - name: Upload Terraform plan JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-shared-plan-${{ github.run_number }}
+          path: infrastructure/shared/tfplan.json
+          retention-days: 7
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
