@@ -16,7 +16,7 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.0
+    rev: v8.30.1
     hooks:
       - id: gitleaks
 
@@ -24,11 +24,6 @@ repos:
     hooks:
       - id: terraform-fmt
         name: Terraform Format
-        entry: terraform
+        entry: terraform fmt -check .
         language: system
         pass_filenames: false
-        args:
-          - fmt
-          - -check
-          - -recursive
-        files: \.tf$
