@@ -19,7 +19,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: infrastructure/shared
+        working-directory: infrastructure/networking
 
     steps:
       - name: Checkout
@@ -124,7 +124,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terraform-shared-plan-${{ github.run_number }}
-          path: infrastructure/shared/tfplan.json
+          path: infrastructure/networking/tfplan.json
           retention-days: 7
 
       - name: Terraform Apply

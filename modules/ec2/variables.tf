@@ -70,3 +70,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "source_dest_check" {
+  description = "Whether source/destination checking is enabled for the EC2 instance."
+  type        = bool
+  default     = false
+}
+
+variable "associate_elastic_ip" {
+  description = "Whether to allocate and associate an Elastic IP with the EC2 instance."
+  type        = bool
+  default     = true
+}

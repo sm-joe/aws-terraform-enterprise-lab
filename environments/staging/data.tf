@@ -1,10 +1,9 @@
-# tflint-ignore: terraform_unused_declarations
-data "terraform_remote_state" "shared" {
+data "terraform_remote_state" "networking" {
   backend = "s3"
 
   config = {
     bucket = "aws-terraform-enterprise-lab-tfstate-opeth"
-    key    = "infrastructure/shared/terraform.tfstate"
+    key    = "infrastructure/networking/terraform.tfstate"
     region = "ap-south-1"
   }
 }

@@ -45,7 +45,7 @@ This lab demonstrates:
                     Central Terraform State
                          Amazon S3
                               |
-                              +-- infrastructure/shared/
+                              +-- infrastructure/networking/
                               |      terraform.tfstate
                               |
                               +-- environments/dev/
@@ -218,7 +218,7 @@ The DynamoDB lock table remains part of the bootstrap foundation but is not used
 ### State separation
 
 ```text
-infrastructure/shared
+infrastructure/networking
     -> shared infrastructure state
 
 environments/dev
@@ -312,7 +312,7 @@ The CI workflow runs on pull requests targeting `main`.
 It validates:
 
 ```text
-infrastructure/shared
+infrastructure/networking
 environments/dev
 environments/staging
 environments/prod

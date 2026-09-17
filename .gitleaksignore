@@ -1,0 +1,8 @@
+# Ignore a specific pem file in the root directory
+private_key.pem
+
+# Ignore all pem files inside a specific folder
+config/keys/*.pem
+
+# Ignore a specific file anywhere in the project
+**/my-secret-key.pem
