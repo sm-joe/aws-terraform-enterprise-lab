@@ -1,75 +1,41 @@
-variable "environment" {
-  description = "Environment name"
-  type        = string
-  default     = "prod"
-}
-
 variable "aws_region" {
-  description = "AWS region"
+  description = "AWS region for the production workload."
   type        = string
-  default     = "ap-south-1"
+  default     = "eu-central-1"
 }
 
 variable "project_name" {
-  description = "Project name"
+  description = "Project name."
   type        = string
   default     = "aws-terraform-enterprise-lab"
 }
 
-variable "instances" {
-  description = "EC2 instances to provision"
+variable "environment" {
+  description = "Environment name."
+  type        = string
+  default     = "prod"
+}
 
-  type = map(object({
-    name = string
-    #ami_id        = string
-    os            = string
-    architecture  = string
-    instance_type = string
-    subnet_type   = string
-  }))
+variable "vpn_client_cidr" {
+  description = "CIDR assigned to OpenVPN clients."
+  type        = string
+  default     = "10.100.0.0/24"
+}
 
-  validation {
-    condition = alltrue([
-      for instance in var.instances :
-      contains(
-        ["amazon-linux-2023", "windows"],
-        instance.os
-      )
-    ])
+variable "vpn_port" {
+  description = "OpenVPN UDP listener port."
+  type        = number
+  default     = 1194
+}
 
-    error_message = "os must be either amazon-linux-2023 or windows."
-  }
+variable "instance_type" {
+  description = "EC2 instance type for the OpenVPN server."
+  type        = string
+  default     = "t4g.small"
+}
 
-  validation {
-    condition = alltrue([
-      for instance in var.instances :
-      contains(
-        ["x86_64", "arm64"],
-        instance.architecture
-      )
-    ])
-
-    error_message = "architecture must be either x86_64 or arm64."
-  }
-
-  validation {
-    condition = alltrue([
-      for instance in var.instances :
-      instance.os != "windows" || instance.architecture == "x86_64"
-    ])
-
-    error_message = "Windows instances must use x86_64 architecture."
-  }
-
-  validation {
-    condition = alltrue([
-      for instance in var.instances :
-      contains(
-        ["public", "private"],
-        instance.subnet_type
-      )
-    ])
-
-    error_message = "subnet_type must be either public or private."
-  }
+variable "root_volume_size" {
+  description = "VPN server root volume size in GiB."
+  type        = number
+  default     = 8
 }
