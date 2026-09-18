@@ -5,6 +5,7 @@ repos:
       - id: check-added-large-files
         args:
           - --maxkb=1024
+
       - id: check-merge-conflict
       - id: check-yaml
       - id: check-json
@@ -13,6 +14,7 @@ repos:
       - id: mixed-line-ending
         args:
           - --fix=lf
+
       - id: detect-private-key
 
   - repo: https://github.com/gitleaks/gitleaks
@@ -29,8 +31,6 @@ repos:
         files: \.tf$
 
       - id: terraform_validate
-        stages:
-          - manual
         args:
           - --args=-no-color
           - --tf-init-args=-backend=false
