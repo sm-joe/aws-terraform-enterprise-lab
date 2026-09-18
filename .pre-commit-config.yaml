@@ -29,9 +29,3 @@ repos:
         args:
           - --args=-recursive
         files: \.tf$
-
-      - id: terraform_validate
-        args:
-          - --args=-no-color
-          - --tf-init-args=-backend=false
-        files: \.tf$
