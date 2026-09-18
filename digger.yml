@@ -1,0 +1,50 @@
+projects:
+  - name: networking
+    dir: infrastructure/networking
+    aws_role_to_assume:
+      command: "arn:aws:iam::638631156706:role/GitHubActions-Terraform-Prod"
+
+  - name: dev-ec2
+    dir: environments/dev/ec2
+    aws_role_to_assume:
+      command: "arn:aws:iam::638631156706:role/GitHubActions-Terraform-Dev"
+
+  - name: dev-iam
+    dir: environments/dev/iam
+    aws_role_to_assume:
+      command: "arn:aws:iam::638631156706:role/GitHubActions-Terraform-Dev"
+
+  - name: dev-s3
+    dir: environments/dev/s3
+    aws_role_to_assume:
+      command: "arn:aws:iam::638631156706:role/GitHubActions-Terraform-Dev"
+
+  - name: staging-ec2
+    dir: environments/staging/ec2
+    aws_role_to_assume:
+      command: "arn:aws:iam::638631156706:role/GitHubActions-Terraform-Staging"
+
+  - name: staging-iam
+    dir: environments/staging/iam
+    aws_role_to_assume:
+      command: "arn:aws:iam::638631156706:role/GitHubActions-Terraform-Staging"
+
+  - name: staging-s3
+    dir: environments/staging/s3
+    aws_role_to_assume:
+      command: "arn:aws:iam::638631156706:role/GitHubActions-Terraform-Staging"
+
+  - name: prod-ec2
+    dir: environments/prod/ec2
+    aws_role_to_assume:
+      command: "arn:aws:iam::638631156706:role/GitHubActions-Terraform-Prod"
+
+  - name: prod-iam
+    dir: environments/prod/iam
+    aws_role_to_assume:
+      command: "arn:aws:iam::638631156706:role/GitHubActions-Terraform-Prod"
+
+  - name: prod-s3
+    dir: environments/prod/s3
+    aws_role_to_assume:
+      command: "arn:aws:iam::638631156706:role/GitHubActions-Terraform-Prod"
