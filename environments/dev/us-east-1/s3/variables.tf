@@ -22,4 +22,4 @@ variable "aws_region" {
   }
 }
 
-# Digger security gate test
+# ComplianceChicken integration test
