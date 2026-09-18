@@ -26,6 +26,12 @@ resource "aws_instance" "this" {
     delete_on_termination = true
   }
 
+  lifecycle {
+    ignore_changes = [
+      user_data
+    ]
+  }
+
   tags = merge(
     var.tags,
     {
