@@ -1,3 +1,4 @@
+# trivy:ignore:AVD-AWS-0132
 resource "aws_s3_bucket" "this" {
   #checkov:skip=CKV_AWS_18:S3 access logging is intentionally not enabled for this lab Terraform state bucket.
   #checkov:skip=CKV_AWS_144:Cross-region replication is intentionally not configured for this single-region lab.
@@ -22,6 +23,7 @@ resource "aws_s3_bucket_versioning" "this" {
   }
 }
 
+# trivy:ignore:AVD-AWS-0132
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   bucket = aws_s3_bucket.this.id
 

@@ -6,7 +6,7 @@ variable "bucket_name" {
 variable "versioning_enabled" {
   description = "Whether S3 object versioning is enabled."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "force_destroy" {
