@@ -7,7 +7,7 @@ on:
         required: false
         type: string
       spec:
-        required: true
+        required: false
         type: string
 
 run-name: "${{ inputs.run_name }}"
