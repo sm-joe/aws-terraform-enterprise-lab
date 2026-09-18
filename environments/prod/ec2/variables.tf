@@ -39,7 +39,3 @@ variable "root_volume_size" {
   type        = number
   default     = 8
 }
-
-# Digger integration test
-# Digger integration test
-# Digger integration test
