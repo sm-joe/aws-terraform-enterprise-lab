@@ -15,7 +15,6 @@ run-name: "${{ inputs.run_name }}"
 jobs:
   digger:
     runs-on: ubuntu-latest
-    environment: dev
 
     permissions:
       contents: write
