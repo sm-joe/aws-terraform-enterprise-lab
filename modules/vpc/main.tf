@@ -23,7 +23,7 @@ resource "aws_internet_gateway" "this" {
     }
   )
 }
-
+# trivy:ignore:AVD-AWS-0164
 resource "aws_subnet" "public" {
   #checkov:skip=CKV_AWS_130:Public IP assignment is intentional because these are explicitly designed public subnets for the lab.
   count = length(var.availability_zones)

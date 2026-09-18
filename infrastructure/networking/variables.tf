@@ -21,3 +21,5 @@ variable "eu_central_1_vpc_cidr" {
   type        = string
   default     = "10.30.0.0/22"
 }
+
+# Digger Networking Integration
