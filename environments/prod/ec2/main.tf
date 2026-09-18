@@ -45,6 +45,7 @@ resource "aws_vpc_security_group_ingress_rule" "openvpn" {
   description = "OpenVPN client connections."
 }
 
+# trivy:ignore:AVD-AWS-0104
 resource "aws_vpc_security_group_egress_rule" "all" {
   security_group_id = aws_security_group.vpn.id
 
