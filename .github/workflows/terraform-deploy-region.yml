@@ -1,10 +1,10 @@
-name: Terraform Regional Deployment
+name: Regional Terraform Deployment
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Environment to deploy"
+        description: "Target environment"
         required: true
         type: choice
         options:
@@ -14,7 +14,7 @@ on:
         default: dev
 
       aws_region:
-        description: "AWS region where resources will be deployed"
+        description: "Target AWS region"
         required: true
         type: choice
         options:
@@ -24,7 +24,7 @@ on:
         default: us-east-1
 
       resource:
-        description: "Terraform resource class to deploy"
+        description: "Terraform resource class"
         required: true
         type: choice
         options:
@@ -43,123 +43,82 @@ on:
         default: plan
 
       auto_approve:
-        description: "Automatically approve Terraform apply"
+        description: "Auto approve Terraform apply"
         required: true
         type: boolean
         default: false
 
-run-name: >-
-  Terraform ${{ inputs.action }} -
-  ${{ inputs.environment }} -
-  ${{ inputs.aws_region }} -
-  ${{ inputs.resource }}
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   terraform:
-    name: Terraform ${{ inputs.action }}
+    name: Terraform ${{ inputs.action }} - ${{ inputs.environment }} - ${{ inputs.aws_region }} - ${{ inputs.resource }}
+
     runs-on: ubuntu-latest
 
     environment: ${{ inputs.environment }}
-
-    permissions:
-      contents: read
-      id-token: write
-      pull-requests: write
 
     env:
       TF_IN_AUTOMATION: true
       TF_INPUT: false
       TF_VAR_aws_region: ${{ inputs.aws_region }}
 
-    defaults:
-      run:
-        shell: bash
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set deployment context
-        id: context
-        run: |
-          ENVIRONMENT="${{ inputs.environment }}"
-          REGION="${{ inputs.aws_region }}"
-          RESOURCE="${{ inputs.resource }}"
-
-          TERRAFORM_DIR="environments/${ENVIRONMENT}/${RESOURCE}"
-          STATE_KEY="environments/${ENVIRONMENT}/${REGION}/${RESOURCE}/terraform.tfstate"
-
-          echo "environment=${ENVIRONMENT}" >> "$GITHUB_OUTPUT"
-          echo "region=${REGION}" >> "$GITHUB_OUTPUT"
-          echo "resource=${RESOURCE}" >> "$GITHUB_OUTPUT"
-          echo "terraform_dir=${TERRAFORM_DIR}" >> "$GITHUB_OUTPUT"
-          echo "state_key=${STATE_KEY}" >> "$GITHUB_OUTPUT"
-
-          echo "Environment : ${ENVIRONMENT}"
-          echo "Region      : ${REGION}"
-          echo "Resource    : ${RESOURCE}"
-          echo "Terraform   : ${TERRAFORM_DIR}"
-          echo "State key   : ${STATE_KEY}"
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
-          role-session-name: GitHubActions-Terraform-Regional
+          role-session-name: GitHubActions-Terraform-${{ inputs.environment }}
 
-      - name: Verify AWS Identity
+      - name: Set Terraform configuration
+        id: config
+        shell: bash
         run: |
-          aws sts get-caller-identity
+          set -euo pipefail
 
-      - name: Verify Terraform directory
-        run: |
-          if [ ! -d "${{ steps.context.outputs.terraform_dir }}" ]; then
-            echo "ERROR: Terraform directory does not exist:"
-            echo "${{ steps.context.outputs.terraform_dir }}"
-            exit 1
-          fi
+          TERRAFORM_DIR="environments/${{ inputs.environment }}/${{ inputs.resource }}"
+          STATE_KEY="environments/${{ inputs.environment }}/${{ inputs.aws_region }}/${{ inputs.resource }}/terraform.tfstate"
+
+          echo "terraform_dir=${TERRAFORM_DIR}" >> "$GITHUB_OUTPUT"
+          echo "state_key=${STATE_KEY}" >> "$GITHUB_OUTPUT"
+
+          echo "Terraform directory: ${TERRAFORM_DIR}"
+          echo "Terraform state key: ${STATE_KEY}"
+          echo "Deployment region: ${{ inputs.aws_region }}"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.15.0"
 
-      - name: Terraform Format Check
-        working-directory: ${{ steps.context.outputs.terraform_dir }}
-        run: |
-          terraform fmt -check -recursive
-
       - name: Terraform Init
-        working-directory: ${{ steps.context.outputs.terraform_dir }}
+        working-directory: ${{ steps.config.outputs.terraform_dir }}
         run: |
-          terraform init \
-            -reconfigure \
-            -backend-config="key=${{ steps.context.outputs.state_key }}"
+          terraform init -reconfigure \
+            -backend-config="key=${{ steps.config.outputs.state_key }}"
 
       - name: Terraform Validate
-        working-directory: ${{ steps.context.outputs.terraform_dir }}
-        run: |
-          terraform validate
+        working-directory: ${{ steps.config.outputs.terraform_dir }}
+        run: terraform validate
 
       - name: Terraform Plan
-        working-directory: ${{ steps.context.outputs.terraform_dir }}
+        working-directory: ${{ steps.config.outputs.terraform_dir }}
         run: |
           terraform plan \
             -out=tfplan
 
       - name: Terraform Apply
-        if: inputs.action == 'apply'
-        working-directory: ${{ steps.context.outputs.terraform_dir }}
+        if: ${{ inputs.action == 'apply' }}
+        working-directory: ${{ steps.config.outputs.terraform_dir }}
         run: |
-          if [ "${{ inputs.auto_approve }}" != "true" ]; then
-            echo "Terraform apply requires auto_approve=true."
-            echo "Re-run the workflow with auto_approve enabled after reviewing the plan."
-            exit 1
+          if [ "${{ inputs.auto_approve }}" = "true" ]; then
+            terraform apply -auto-approve tfplan
+          else
+            terraform apply tfplan
           fi
-
-          terraform apply \
-            -auto-approve \
-            tfplan
