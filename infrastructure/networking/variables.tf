@@ -23,3 +23,4 @@ variable "eu_central_1_vpc_cidr" {
 }
 
 # Digger Networking Integration
+# Digger Networking Integration
