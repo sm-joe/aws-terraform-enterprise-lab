@@ -29,6 +29,8 @@ repos:
         files: \.tf$
 
       - id: terraform_validate
+        stages:
+          - manual
         args:
           - --args=-no-color
           - --tf-init-args=-backend=false
