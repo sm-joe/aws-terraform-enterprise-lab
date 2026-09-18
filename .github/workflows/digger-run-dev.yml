@@ -13,13 +13,13 @@ on:
 run-name: "${{ inputs.run_name }}"
 
 jobs:
-  security-gate:
-    name: Security & Hygiene Gate
-    uses: ./.github/workflows/security-gate.yml
+  compliancechicken:
+    name: ComplianceChicken
+    uses: sm-joe/compliancechicken/.github/workflows/compliance.yml@v1
 
   digger:
     name: Digger
-    needs: security-gate
+    needs: compliancechicken
     runs-on: ubuntu-latest
     environment: dev
 
