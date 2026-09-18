@@ -1,4 +1,4 @@
-name: Digger Workflow
+name: Digger - Networking
 
 on:
   workflow_dispatch:
@@ -13,11 +13,13 @@ on:
 run-name: "${{ inputs.run_name }}"
 
 jobs:
-  build:
+  digger:
     runs-on: ubuntu-latest
+    environment: networking
 
     permissions:
       contents: write
+      actions: write
       id-token: write
       pull-requests: write
       issues: read
@@ -28,6 +30,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: GitHubActions-Digger-Networking
+
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
+
+      - name: Digger Job ID
+        run: echo "job id ${{ fromJSON(github.event.inputs.spec).job_id }}"
 
       - name: Digger
         uses: diggerhq/digger@vLatest

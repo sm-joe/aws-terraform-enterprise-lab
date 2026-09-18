@@ -1,4 +1,4 @@
-name: Digger Workflow
+name: Digger - Production
 
 on:
   workflow_dispatch:
@@ -13,11 +13,13 @@ on:
 run-name: "${{ inputs.run_name }}"
 
 jobs:
-  build:
+  digger:
     runs-on: ubuntu-latest
+    environment: prod
 
     permissions:
       contents: write
+      actions: write
       id-token: write
       pull-requests: write
       issues: read
@@ -29,13 +31,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Digger Job ID
+        run: echo "job id ${{ fromJSON(github.event.inputs.spec).job_id }}"
+
       - name: Digger
         uses: diggerhq/digger@vLatest
         with:
           digger-spec: ${{ inputs.spec }}
           setup-terraform: true
           terraform-version: "1.15.0"
-          setup-aws: false
+          setup-aws: true
+          aws-role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
           cache-dependencies: true
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}

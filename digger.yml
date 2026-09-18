@@ -1,50 +1,42 @@
 projects:
   - name: networking
     dir: infrastructure/networking
-    aws_role_to_assume:
-      command: "arn:aws:iam::638631156706:role/DiggerTerraformPlan"
+    workflow_file: digger-run-networking.yml
 
   - name: dev-ec2
     dir: environments/dev/ec2
-    aws_role_to_assume:
-      command: "arn:aws:iam::638631156706:role/DiggerTerraformPlan"
+    workflow_file: digger-run-dev.yml
 
   - name: dev-iam
     dir: environments/dev/iam
-    aws_role_to_assume:
-      command: "arn:aws:iam::638631156706:role/DiggerTerraformPlan"
+    workflow_file: digger-run-dev.yml
 
   - name: dev-s3
     dir: environments/dev/s3
-    aws_role_to_assume:
-      command: "arn:aws:iam::638631156706:role/DiggerTerraformPlan"
+    workflow_file: digger-run-dev.yml
 
   - name: staging-ec2
     dir: environments/staging/ec2
-    aws_role_to_assume:
-      command: "arn:aws:iam::638631156706:role/DiggerTerraformPlan"
+    workflow_file: digger-run-staging.yml
 
   - name: staging-iam
     dir: environments/staging/iam
-    aws_role_to_assume:
-      command: "arn:aws:iam::638631156706:role/DiggerTerraformPlan"
+    workflow_file: digger-run-staging.yml
 
   - name: staging-s3
     dir: environments/staging/s3
-    aws_role_to_assume:
-      command: "arn:aws:iam::638631156706:role/DiggerTerraformPlan"
+    workflow_file: digger-run-staging.yml
 
   - name: prod-ec2
     dir: environments/prod/ec2
-    aws_role_to_assume:
-      command: "arn:aws:iam::638631156706:role/DiggerTerraformPlan"
+    workflow_file: digger-run-prod.yml
 
   - name: prod-iam
     dir: environments/prod/iam
-    aws_role_to_assume:
-      command: "arn:aws:iam::638631156706:role/DiggerTerraformPlan"
+    workflow_file: digger-run-prod.yml
 
   - name: prod-s3
     dir: environments/prod/s3
-    aws_role_to_assume:
-      command: "arn:aws:iam::638631156706:role/DiggerTerraformPlan"
+    workflow_file: digger-run-prod.yml
+
+auto_merge: false
