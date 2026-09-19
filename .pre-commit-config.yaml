@@ -1,3 +1,5 @@
+default_stages: [pre-commit]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -5,7 +7,6 @@ repos:
       - id: check-added-large-files
         args:
           - --maxkb=1024
-
       - id: check-merge-conflict
       - id: check-yaml
       - id: check-json
@@ -14,18 +15,28 @@ repos:
       - id: mixed-line-ending
         args:
           - --fix=lf
-
       - id: detect-private-key
 
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.1
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
     hooks:
-      - id: gitleaks
+      - id: codespell
 
+  # Terraform
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.109.0
+    rev: v1.105.0
     hooks:
       - id: terraform_fmt
+
+      - id: terraform_docs
+
+      - id: terraform_tflint
         args:
-          - --args=-recursive
-        files: \.tf$
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+          - --args=--disable-rule=terraform_standard_module_structure
+
+  # Pre-commit self-validation
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
