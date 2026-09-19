@@ -15,7 +15,7 @@ run-name: "${{ inputs.run_name }}"
 jobs:
   compliancechicken:
     name: ComplianceChicken
-    uses: sm-joe/compliancechicken/.github/workflows/compliance.yml@v1.0
+    uses: sm-joe/compliancechicken/.github/workflows/compliance.yml@v1.0.2
     secrets: inherit
 
   digger:
