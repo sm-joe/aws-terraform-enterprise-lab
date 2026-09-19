@@ -15,39 +15,19 @@ on:
 
 permissions:
   contents: write
-  actions: write
   id-token: write
   pull-requests: write
-  issues: read
   statuses: write
-  security-events: write
 
 jobs:
-  terraform-compliance:
-    name: Terraform Compliance
-    if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/terraform-compliance.yml
-
   digger:
     name: Digger
-    needs: terraform-compliance
-
     runs-on: ubuntu-latest
     environment: dev
-
-    permissions:
-      contents: write
-      actions: write
-      id-token: write
-      pull-requests: write
-      issues: read
-      statuses: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -69,15 +49,13 @@ jobs:
         uses: diggerhq/digger@vLatest
         with:
           digger-spec: ${{ inputs.spec }}
-          no-backend: true
-          disable-locking: true
           setup-terraform: true
           terraform-version: "1.15.0"
           setup-aws: false
           cache-dependencies: true
+          no-backend: true
+          disable-locking: true
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
           GITHUB_TOKEN: ${{ github.token }}
-
-
-
+          GITHUB_WORKSPACE: ${{ github.workspace }}
