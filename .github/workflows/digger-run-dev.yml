@@ -12,6 +12,10 @@ on:
 
 run-name: "${{ inputs.run_name }}"
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   compliancechicken:
     name: ComplianceChicken
