@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -79,7 +79,7 @@ jobs:
       # ------------------------------------------------------------
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: "1.15.0"
           terraform_wrapper: false
@@ -115,7 +115,7 @@ jobs:
 
       - name: Upload Infrastructure SARIF
         if: always() && hashFiles('trivy-infrastructure.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-infrastructure.sarif
           category: trivy-infrastructure
@@ -135,7 +135,7 @@ jobs:
 
       - name: Upload Environments SARIF
         if: always() && hashFiles('trivy-environments.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-environments.sarif
           category: trivy-environments
@@ -155,7 +155,8 @@ jobs:
 
       - name: Upload Modules SARIF
         if: always() && hashFiles('trivy-modules.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-modules.sarif
           category: trivy-modules
+
