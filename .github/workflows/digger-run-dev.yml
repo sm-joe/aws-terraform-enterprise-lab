@@ -22,7 +22,7 @@ jobs:
     uses: ./.github/workflows/terraform-compliance.yml
 
   digger:
-    name: Digger
+    name: ${{ fromJSON(inputs.spec).job_id }}
     runs-on: ubuntu-latest
     environment: dev
 
