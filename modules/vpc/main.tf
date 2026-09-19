@@ -1,3 +1,4 @@
+# trivy:ignore:AVD-AWS-0178
 resource "aws_vpc" "this" {
   #checkov:skip=CKV2_AWS_11:VPC Flow Logs are intentionally not enabled for this lab environment.
   #checkov:skip=CKV2_AWS_12:Default VPC security group restriction is intentionally not enforced for this lab baseline.

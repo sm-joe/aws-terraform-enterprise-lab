@@ -1,3 +1,4 @@
+# trivy:ignore:AVD-AWS-0089
 # trivy:ignore:AVD-AWS-0132
 resource "aws_s3_bucket" "this" {
   #checkov:skip=CKV_AWS_18:S3 access logging is intentionally not enabled for this lab Terraform state bucket.

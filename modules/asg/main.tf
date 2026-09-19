@@ -3,6 +3,9 @@ resource "aws_launch_template" "this" {
   name_prefix   = "${var.name}-"
   image_id      = var.ami_id
   instance_type = var.instance_type
+  metadata_options {
+    http_tokens = "required"
+  }
 
   iam_instance_profile {
     name = var.iam_instance_profile

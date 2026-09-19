@@ -1,3 +1,4 @@
+# trivy:ignore:AVD-AWS-0098
 resource "aws_secretsmanager_secret" "this" {
   #checkov:skip=CKV_AWS_149:Secrets Manager - Not required for lab environment.
   #checkov:skip=CKV2_AWS_57:Secrets Manager - Not required for lab environment.

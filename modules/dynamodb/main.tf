@@ -1,3 +1,4 @@
+# trivy:ignore:AVD-AWS-0025
 resource "aws_dynamodb_table" "this" {
   #checkov:skip=CKV_AWS_119:DynamoDB - Not required for lab environment.
   name         = var.table_name

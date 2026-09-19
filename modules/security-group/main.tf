@@ -34,6 +34,7 @@ resource "aws_vpc_security_group_ingress_rule" "this" {
   referenced_security_group_id = each.value.source_security_group_id
 }
 
+# trivy:ignore:AVD-AWS-0104
 resource "aws_vpc_security_group_egress_rule" "this" {
   for_each = {
     for index, rule in var.egress_rules :

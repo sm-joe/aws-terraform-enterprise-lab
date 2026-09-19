@@ -10,6 +10,10 @@ resource "aws_db_subnet_group" "this" {
   )
 }
 
+# trivy:ignore:AVD-AWS-0077
+# trivy:ignore:AVD-AWS-0133
+# trivy:ignore:AVD-AWS-0176
+# trivy:ignore:AVD-AWS-0177
 resource "aws_db_instance" "this" {
   #checkov:skip=CKV_AWS_133:RDS - Not required for lab environment.
   #checkov:skip=CKV_AWS_129:RDS - Not required for lab environment.

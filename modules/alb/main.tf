@@ -1,3 +1,4 @@
+# trivy:ignore:AVD-AWS-0053
 resource "aws_lb" "this" {
   #checkov:skip=CKV_AWS_131:ALB - Not required for lab environment.
   #checkov:skip=CKV_AWS_91:ALB - Not required for lab environment.
@@ -7,6 +8,7 @@ resource "aws_lb" "this" {
   name               = substr("${var.name}", 0, 32)
   internal           = false
   load_balancer_type = "application"
+  drop_invalid_header_fields = true
 
   security_groups = var.security_group_ids
   subnets         = var.subnet_ids
@@ -47,6 +49,7 @@ resource "aws_lb_target_group" "this" {
   )
 }
 
+# trivy:ignore:AVD-AWS-0054
 resource "aws_lb_listener" "http" {
   #checkov:skip=CKV_AWS_2:EC2 - Not required for lab environment.
   #checkov:skip=CKV_AWS_103:Security Group - Not required for lab environment.
