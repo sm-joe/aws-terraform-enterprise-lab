@@ -1,10 +1,11 @@
 apply_requirements:
   checks:
-    - approved:
+    - tag_query: ""
+      approved:
         enabled: false
 
 workflows:
-  - tag_query: "dir:environments/dev/ap-south-1/s3/**"
+  - tag_query: "'environments/dev/ap-south-1/s3/**' in dir"
     plan:
       - type: init
       - type: plan
