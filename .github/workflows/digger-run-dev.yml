@@ -17,6 +17,10 @@ permissions:
   security-events: write
 
 jobs:
+  compliance:
+    name: Terraform Compliance
+    uses: ./.github/workflows/terraform-compliance.yml
+
   digger:
     name: Digger
     runs-on: ubuntu-latest
@@ -32,17 +36,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: "1.15.0"
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
