@@ -1,4 +1,4 @@
-name: Digger - Dev Test
+name: Digger - Dev
 
 on:
   workflow_dispatch:
@@ -12,10 +12,14 @@ on:
 
 run-name: "${{ inputs.run_name }}"
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   compliancechicken:
     name: ComplianceChicken
-    uses: sm-joe/compliancechicken/.github/workflows/compliance.yml@v1.1.0
+    uses: sm-joe/compliancechicken/.github/workflows/compliance.yml@v1.1.1
     secrets: inherit
 
   digger:
