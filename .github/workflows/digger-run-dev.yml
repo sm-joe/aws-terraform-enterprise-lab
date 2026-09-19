@@ -1,4 +1,4 @@
-name: Digger - Dev Workflow
+name: Digger - Dev
 
 on:
   pull_request:
@@ -7,8 +7,6 @@ on:
     types:
       - opened
       - synchronize
-      - reopened
-      - closed
 
   issue_comment:
     types:
@@ -18,32 +16,23 @@ on:
 
 permissions:
   contents: write
-  actions: write
-  id-token: write
   pull-requests: write
   issues: read
   statuses: write
+  id-token: write
 
 jobs:
   digger:
     name: Digger
-    if: >
-      github.event_name == 'pull_request' ||
-      (
-        github.event_name == 'issue_comment' &&
-        contains(github.event.comment.body, 'digger')
-      )
-
     runs-on: ubuntu-latest
     environment: dev
 
     permissions:
       contents: write
-      actions: write
-      id-token: write
       pull-requests: write
       issues: read
       statuses: write
+      id-token: write
 
     steps:
       - name: Checkout
@@ -65,11 +54,13 @@ jobs:
           role-session-name: GitHubActions-Digger-Dev
 
       - name: Verify AWS Identity
+        shell: bash
         run: aws sts get-caller-identity
 
       - name: Digger
         uses: diggerhq/digger@v0.6.147
         with:
+          no-backend: true
           setup-terraform: true
           terraform-version: "1.15.0"
           setup-aws: false
