@@ -25,14 +25,16 @@ permissions:
 jobs:
   digger:
     name: Digger
+
     if: >-
       ${{
         github.event_name == 'pull_request' ||
         (
           github.event_name == 'issue_comment' &&
-          startsWith(github.event.comment.body, 'digger')
+          github.event.comment.user.type != 'Bot'
         )
       }}
+
     runs-on: ubuntu-latest
     environment: dev
 
@@ -70,7 +72,6 @@ jobs:
         uses: diggerhq/digger@v0.6.147
         with:
           no-backend: true
-          disable-locking: true
           setup-terraform: true
           terraform-version: "1.15.0"
           setup-aws: false
