@@ -1,4 +1,4 @@
-name: Digger - Dev
+name: Digger - Dev Workflow
 
 on:
   workflow_dispatch:
