@@ -46,7 +46,7 @@ jobs:
       - name: Show Digger Job
         run: |
           echo "Digger job specification:"
-          echo '${{ inputs.spec }}' | ConvertFrom-Json | ConvertTo-Json -Depth 20
+          echo '${{ inputs.spec }}'
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
