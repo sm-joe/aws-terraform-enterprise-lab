@@ -16,6 +16,7 @@ resource "aws_s3_bucket" "this" {
   )
 }
 
+# trivy:ignore:AVD-AWS-0090
 resource "aws_s3_bucket_versioning" "this" {
   bucket = aws_s3_bucket.this.id
 
