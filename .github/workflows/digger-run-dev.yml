@@ -2,82 +2,26 @@ name: Digger - Dev Workflow
 
 on:
   workflow_dispatch:
-    inputs:
-      run_name:
-        description: "Digger run name"
-        required: false
-        type: string
-
-      spec:
-        description: "Digger project specification"
-        required: false
-        type: string
 
 permissions:
   contents: write
-  actions: write
   id-token: write
   pull-requests: write
-  issues: read
   statuses: write
-  security-events: write
 
 jobs:
-  terraform-compliance:
-    name: Terraform Compliance
-    if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/terraform-compliance.yml
-
-  digger:
-    name: Digger
-    needs: terraform-compliance
-
+  test:
+    name: Digger Dispatch Test
     runs-on: ubuntu-latest
     environment: dev
-
-    permissions:
-      contents: write
-      actions: write
-      id-token: write
-      pull-requests: write
-      issues: read
-      statuses: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.15.0"
-          terraform_wrapper: false
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
-          role-session-name: GitHubActions-Digger-Dev
-
-      - name: Verify AWS Identity
-        run: aws sts get-caller-identity
-
-      - name: Digger
-        uses: diggerhq/digger@vLatest
-        with:
-          digger-spec: ${{ inputs.spec }}
-          no-backend: true
-          disable-locking: true
-          setup-terraform: true
-          terraform-version: "1.15.0"
-          setup-aws: false
-          cache-dependencies: true
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-          GITHUB_TOKEN: ${{ github.token }}
-
-
-
+      - name: Verify
+        run: |
+          echo "workflow_dispatch works"
+          echo "Commit: $GITHUB_SHA"
+          echo "Ref: $GITHUB_REF"
+          git status --short
