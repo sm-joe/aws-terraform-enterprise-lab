@@ -9,3 +9,7 @@ workflows:
     plan:
       - type: init
       - type: plan
+
+engine:
+  name: terraform
+  version: 1.15.0 
