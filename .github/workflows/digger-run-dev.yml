@@ -1,4 +1,4 @@
-name: Digger - Dev
+name: Digger - Dev Workflow
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ run-name: "${{ inputs.run_name }}"
 jobs:
   compliancechicken:
     name: ComplianceChicken
-    uses: sm-joe/compliancechicken/.github/workflows/compliance.yml@v1
+    uses: sm-joe/compliancechicken/.github/workflows/compliance.yml@v1.0
     secrets: inherit
 
   digger:
