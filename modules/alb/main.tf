@@ -5,9 +5,9 @@ resource "aws_lb" "this" {
   #checkov:skip=CKV_AWS_150:ALB - Not required for lab environment.
   #checkov:skip=CKV2_AWS_20:ALB - Not required for lab environment.
   #checkov:skip=CKV2_AWS_28:ALB - Not required for lab environment.
-  name               = substr("${var.name}", 0, 32)
-  internal           = false
-  load_balancer_type = "application"
+  name                       = substr("${var.name}", 0, 32)
+  internal                   = false
+  load_balancer_type         = "application"
   drop_invalid_header_fields = true
 
   security_groups = var.security_group_ids
