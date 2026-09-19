@@ -1,4 +1,4 @@
-name: Digger - Dev Test
+name: Digger - Dev
 
 on:
   workflow_dispatch:
