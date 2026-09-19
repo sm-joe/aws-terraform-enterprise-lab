@@ -1,6 +1,7 @@
 name: Digger - Dev
 
 on:
+<<<<<<< HEAD
   pull_request:
     branches:
       - main
@@ -12,7 +13,21 @@ on:
     types:
       - created
 
+=======
+>>>>>>> 0ec0766366f174e1345ae28478f3b1026df1f5de
   workflow_dispatch:
+    inputs:
+      spec:
+        description: "Digger project specification"
+        required: true
+        type: string
+
+      run_name:
+        description: "Digger run name"
+        required: false
+        type: string
+
+run-name: "${{ inputs.run_name }}"
 
 permissions:
   contents: write
@@ -40,6 +55,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Show Digger Job
+        run: |
+          echo "Digger job specification:"
+          echo '${{ inputs.spec }}'
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -60,7 +80,11 @@ jobs:
       - name: Digger
         uses: diggerhq/digger@v0.6.147
         with:
+<<<<<<< HEAD
           no-backend: true
+=======
+          digger-spec: ${{ inputs.spec }}
+>>>>>>> 0ec0766366f174e1345ae28478f3b1026df1f5de
           setup-terraform: true
           terraform-version: "1.15.0"
           setup-aws: false
