@@ -6,7 +6,6 @@ apply_requirements:
 
 workflows:
   - tag_query: "'environments/dev/ap-south-1/s3/**' in dir"
-    # Indent the engine block here so it applies to this specific workflow
     engine:
       name: terraform
       version: 1.15.0
@@ -14,7 +13,6 @@ workflows:
       - type: init
       - type: plan
 
-# Keep it here as a global default for any other directories, if desired
 engine:
   name: terraform
   version: 1.15.0
