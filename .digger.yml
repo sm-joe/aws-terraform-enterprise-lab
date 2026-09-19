@@ -110,6 +110,6 @@ projects:
   - name: prod-eu-central-1-s3
     dir: environments/prod/eu-central-1/s3
     workflow_file: digger-run-prod.yml
-
 auto_merge: false
+
 
