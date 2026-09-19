@@ -1,7 +1,6 @@
 name: Digger - Dev
 
 on:
-<<<<<<< HEAD
   pull_request:
     branches:
       - main
@@ -13,8 +12,6 @@ on:
     types:
       - created
 
-=======
->>>>>>> 0ec0766366f174e1345ae28478f3b1026df1f5de
   workflow_dispatch:
     inputs:
       spec:
@@ -80,11 +77,7 @@ jobs:
       - name: Digger
         uses: diggerhq/digger@v0.6.147
         with:
-<<<<<<< HEAD
           no-backend: true
-=======
-          digger-spec: ${{ inputs.spec }}
->>>>>>> 0ec0766366f174e1345ae28478f3b1026df1f5de
           setup-terraform: true
           terraform-version: "1.15.0"
           setup-aws: false
