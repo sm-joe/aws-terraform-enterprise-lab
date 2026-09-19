@@ -1,28 +1,41 @@
-name: Digger - Dev
+name: Digger - Dev Workflow
 
 on:
-  workflow_dispatch:
-    inputs:
-      run_name:
-        required: false
-        type: string
-      spec:
-        required: true
-        type: string
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
 
-run-name: "${{ inputs.run_name }}"
+  issue_comment:
+    types:
+      - created
 
 permissions:
-  contents: read
+  contents: write
+  actions: write
+  id-token: write
+  pull-requests: write
+  issues: read
+  statuses: write
   security-events: write
 
 jobs:
-  compliance:
+  terraform-compliance:
     name: Terraform Compliance
     uses: ./.github/workflows/terraform-compliance.yml
 
   digger:
-    name: ${{ fromJSON(inputs.spec).job_id }}
+    name: Digger
+    needs: terraform-compliance
+    if: >
+      github.event_name == 'pull_request' ||
+      (
+        github.event_name == 'issue_comment' &&
+        startsWith(github.event.comment.body, 'digger')
+      )
     runs-on: ubuntu-latest
     environment: dev
 
@@ -36,17 +49,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.15.0"
+          terraform_wrapper: false
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
@@ -58,12 +72,14 @@ jobs:
       - name: Digger
         uses: diggerhq/digger@vLatest
         with:
-          digger-spec: ${{ inputs.spec }}
+          no-backend: true
+          disable-locking: true
+          digger-filename: .digger-dev.yml
+          upload-plan-destination: github
           setup-terraform: true
           terraform-version: "1.15.0"
           setup-aws: false
           cache-dependencies: true
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          GITHUB_TOKEN: ${{ github.token }}
