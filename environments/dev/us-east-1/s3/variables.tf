@@ -21,3 +21,9 @@ variable "aws_region" {
     error_message = "aws_region must be us-east-1, ap-south-1, or eu-central-1."
   }
 }
+
+variable "project_name" {
+  description = "Project name."
+  type        = string
+  default     = "aws-terraform-enterprise"
+}
