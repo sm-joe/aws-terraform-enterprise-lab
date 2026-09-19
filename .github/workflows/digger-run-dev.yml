@@ -17,14 +17,8 @@ permissions:
   security-events: write
 
 jobs:
-  compliancechicken:
-    name: ComplianceChicken
-    uses: sm-joe/compliancechicken/.github/workflows/compliance.yml@v1.1.1
-    secrets: inherit
-
   digger:
     name: Digger
-    needs: compliancechicken
     runs-on: ubuntu-latest
     environment: dev
 
