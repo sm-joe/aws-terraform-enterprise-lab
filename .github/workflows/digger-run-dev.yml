@@ -2,16 +2,6 @@ name: Digger - Dev Workflow
 
 on:
   workflow_dispatch:
-    inputs:
-      run_name:
-        description: "Digger run name"
-        required: false
-        type: string
-
-      spec:
-        description: "Digger project specification"
-        required: false
-        type: string
 
 permissions:
   contents: write
