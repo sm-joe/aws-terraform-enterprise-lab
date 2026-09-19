@@ -16,6 +16,7 @@ jobs:
   compliancechicken:
     name: ComplianceChicken
     uses: sm-joe/compliancechicken/.github/workflows/compliance.yml@v1.0
+    secrets: inherit
 
   digger:
     name: Digger
