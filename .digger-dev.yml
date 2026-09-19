@@ -42,3 +42,4 @@ projects:
     dir: environments/dev/eu-central-1/s3
 
 auto_merge: false
+

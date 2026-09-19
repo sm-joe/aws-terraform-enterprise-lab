@@ -25,16 +25,20 @@ permissions:
 jobs:
   terraform-compliance:
     name: Terraform Compliance
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/terraform-compliance.yml
 
   digger:
     name: Digger
     needs: terraform-compliance
     if: >
-      github.event_name == 'pull_request' ||
+      always() &&
       (
-        github.event_name == 'issue_comment' &&
-        startsWith(github.event.comment.body, 'digger')
+        github.event_name == 'pull_request' ||
+        (
+          github.event_name == 'issue_comment' &&
+          startsWith(github.event.comment.body, 'digger')
+        )
       )
     runs-on: ubuntu-latest
     environment: dev
