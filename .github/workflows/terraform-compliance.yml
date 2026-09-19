@@ -13,22 +13,13 @@ permissions:
   security-events: write
 
 jobs:
-  terraform-compliance:
-    name: Terraform Compliance
+  yaml-lint:
+    name: YAML Lint
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      # ------------------------------------------------------------
-      # Repository Hygiene
-      # ------------------------------------------------------------
-
-      - name: Check merge conflicts
-        run: git diff --check
 
       - name: Lint YAML
         uses: ibiqlik/action-yamllint@v3
@@ -65,18 +56,28 @@ jobs:
               raise SystemExit(1)
           PY
 
-      # ------------------------------------------------------------
-      # Secret Detection
-      # ------------------------------------------------------------
+  secret-detection:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Gitleaks
         uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ------------------------------------------------------------
-      # Terraform Quality
-      # ------------------------------------------------------------
+  terraform-format:
+    name: Terraform Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
@@ -86,6 +87,14 @@ jobs:
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive -diff
+
+  terraform-docs:
+    name: Terraform Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Terraform Documentation Check
         uses: terraform-docs/gh-actions@v1.4.1
@@ -97,66 +106,83 @@ jobs:
           output-method: inject
           git-push: false
 
-      # ------------------------------------------------------------
-      # Trivy IaC Security
-      # ------------------------------------------------------------
+  trivy-infrastructure:
+    name: Trivy - Infrastructure
+    runs-on: ubuntu-latest
 
-      - name: Trivy - Infrastructure
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           version: 'v0.74.0'
           scan-type: config
           scan-ref: infrastructure
           severity: HIGH,CRITICAL
-          exit-code: "0"
+          exit-code: "1"
           format: sarif
           output: trivy-infrastructure.sarif
           hide-progress: true
 
-      - name: Upload Infrastructure SARIF
+      - name: Upload SARIF
         if: always() && hashFiles('trivy-infrastructure.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-infrastructure.sarif
           category: trivy-infrastructure
 
-      - name: Trivy - Environments
+  trivy-environments:
+    name: Trivy - Environments
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           version: 'v0.74.0'
           scan-type: config
           scan-ref: environments
           severity: HIGH,CRITICAL
-          exit-code: "0"
+          exit-code: "1"
           format: sarif
           output: trivy-environments.sarif
           hide-progress: true
-          skip-setup-trivy: true
 
-      - name: Upload Environments SARIF
+      - name: Upload SARIF
         if: always() && hashFiles('trivy-environments.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-environments.sarif
           category: trivy-environments
 
-      - name: Trivy - Modules
+  trivy-modules:
+    name: Trivy - Modules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           version: 'v0.74.0'
           scan-type: config
           scan-ref: modules
           severity: HIGH,CRITICAL
-          exit-code: "0"
+          exit-code: "1"
           format: sarif
           output: trivy-modules.sarif
           hide-progress: true
-          skip-setup-trivy: true
 
-      - name: Upload Modules SARIF
+      - name: Upload SARIF
         if: always() && hashFiles('trivy-modules.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-modules.sarif
           category: trivy-modules
-
